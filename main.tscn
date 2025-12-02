@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cy0b84phu3qe1"]
+
+[ext_resource type="PackedScene" uid="uid://dp7sxe5xl5shk" path="res://level/temporary_level.tscn" id="2_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://s2c62y05garf" path="res://control/rts_camera.tscn" id="6_7mycd"]
+
+[node name="main" type="Node3D"]
+
+[node name="TemporaryLevel" parent="." instance=ExtResource("2_0xm2m")]
+
+[node name="rtsCamera" parent="." instance=ExtResource("6_7mycd")]
+transform = Transform3D(0.999995, 0, 0, 0, 1, 0, 0, 0, 0.999995, 0, 4.06319, 0)
