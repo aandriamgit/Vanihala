@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://dp7sxe5xl5shk"]
+[gd_scene load_steps=7 format=3 uid="uid://dp7sxe5xl5shk"]
 
 [ext_resource type="Texture2D" uid="uid://d3463lq4inomu" path="res://level/checkboard.png" id="1_cig4d"]
 
@@ -28,6 +28,9 @@ albedo_color = Color(1, 0.717647, 0.188235, 1)
 albedo_texture = ExtResource("1_cig4d")
 uv1_triplanar = true
 uv1_triplanar_sharpness = 4.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yb1cc"]
+albedo_texture = ExtResource("1_cig4d")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pixig"]
 albedo_color = Color(0.286275, 0.682353, 0.427451, 1)
@@ -215,6 +218,7 @@ material = SubResource("StandardMaterial3D_ooyhk")
 
 [node name="Platform6" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.245789, -5, 0.13105)
+material_override = SubResource("StandardMaterial3D_yb1cc")
 use_collision = true
 size = Vector3(127.579, 11, 126.685)
 material = SubResource("StandardMaterial3D_pixig")
@@ -222,5 +226,5 @@ material = SubResource("StandardMaterial3D_pixig")
 [node name="Platform7" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 82.1648)
 use_collision = true
-size = Vector3(9, 11, 9)
+size = Vector3(7, 11, 8)
 material = SubResource("StandardMaterial3D_7l0sc")

@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://w4au2xsvn836"]
+
+[ext_resource type="Texture2D" uid="uid://d3463lq4inomu" path="res://level/checkboard.png" id="1_gv468"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d1oed"]
+albedo_color = Color(0.28627452, 0.68235296, 0.42745098, 1)
+albedo_texture = ExtResource("1_gv468")
+uv1_triplanar = true
+uv1_triplanar_sharpness = 149.99982
+
+[sub_resource type="BoxMesh" id="BoxMesh_ja646"]
+material = SubResource("StandardMaterial3D_d1oed")
+
+[node name="terrainAPI" type="terrainAPI"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_ja646")

@@ -1,11 +1,47 @@
-[gd_scene load_steps=3 format=3 uid="uid://cy0b84phu3qe1"]
+[gd_scene load_steps=5 format=3 uid="uid://cy0b84phu3qe1"]
 
-[ext_resource type="PackedScene" uid="uid://dp7sxe5xl5shk" path="res://level/temporary_level.tscn" id="2_0xm2m"]
-[ext_resource type="PackedScene" uid="uid://s2c62y05garf" path="res://control/rts_camera.tscn" id="6_7mycd"]
+[ext_resource type="PackedScene" uid="uid://w4au2xsvn836" path="res://terrain_api.tscn" id="2_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" path="res://level/grass.tscn" id="3_h2yge"]
+
+[sub_resource type="Environment" id="Environment_ig7tw"]
+background_mode = 1
+background_color = Color(0, 0.80784315, 1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.815625, 0.702063, 0.54125, 1)
+ambient_light_sky_contribution = 0.31
+tonemap_mode = 2
+tonemap_exposure = 1.05
+tonemap_white = 0.95
+ssao_intensity = 1.0
+glow_normalized = true
+glow_intensity = 0.2
+fog_enabled = true
+fog_light_color = Color(0, 0.478431, 0.764706, 1)
+fog_density = 0.002
+fog_height = 0.52
+fog_height_density = 0.1319
+volumetric_fog_density = 0.1525
+volumetric_fog_albedo = Color(0.203922, 0.203922, 1, 1)
+volumetric_fog_emission = Color(0.0431373, 0.0431373, 0.0431373, 1)
 
 [node name="main" type="Node3D"]
 
-[node name="TemporaryLevel" parent="." instance=ExtResource("2_0xm2m")]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ig7tw")
 
-[node name="rtsCamera" parent="." instance=ExtResource("6_7mycd")]
-transform = Transform3D(0.999995, 0, 0, 0, 1, 0, 0, 0, 0.999995, 0, 4.06319, 0)
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7071068, -0.6123726, 0.35355315, 0, 0.49999964, 0.8660256, -0.7071068, -0.6123726, 0.35355315, 0, 10, 0)
+visible = false
+shadow_enabled = true
+directional_shadow_max_distance = 40.0
+
+[node name="terrainAPI" parent="." instance=ExtResource("2_0xm2m")]
+visible = false
+
+[node name="RTScamera" parent="." instance=ExtResource("2_h2yge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.761505, 0, -4.759982)
+current = true
+
+[node name="Main" parent="." instance=ExtResource("3_h2yge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5475693, 0, 2.0506678)
