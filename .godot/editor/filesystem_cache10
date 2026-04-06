@@ -1,9 +1,9 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1775425061
+::res://::1775426955
 betterRtsCamera.tscn::PackedScene::9202260329449623121::1768166669::0::1::::<><><>0<>0<><>::uid://cf7brgwaxlmud::::res://addons/3d_rts_camera/rtscam.tscn
 icon.svg::CompressedTexture2D::6296600464948196::1764694943::1764694943::1::::<><><>0<>0<>afe243fa6442f164b9fd8183083ad6ca<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 main.gd::GDScript::3037059862725173555::1764694943::0::1::::<>RefCounted<><>0<>0<><>::
-main.tscn::PackedScene::6509104253437216034::1775419190::0::1::::<><><>0<>0<><>::uid://w4au2xsvn836::::res://terrain_api.tscn<>uid://cf7brgwaxlmud::::res://addons/3d_rts_camera/rtscam.tscn<>res://level/grass.tscn
+main.tscn::PackedScene::6509104253437216034::1775425727::0::1::::<><><>0<>0<><>::uid://w4au2xsvn836::::res://terrain_api.tscn<>uid://cf7brgwaxlmud::::res://addons/3d_rts_camera/rtscam.tscn<>uid://dy3ukv6yp0g03::::res://level/grass.tscn
 README.md::TextFile::-1::1764834573::0::1::::<><><>0<>0<><>::
 terrain_api.tscn::PackedScene::1604058685289950099::1767469715::0::1::::<><><>0<>0<><>::uid://d3463lq4inomu::::res://level/checkboard.png
 world.tscn::PackedScene::6408755082466216373::1764694943::0::1::::<><><>0<>0<><>::uid://dp7sxe5xl5shk::::res://level/temporary_level.tscn<>uid://s2c62y05garf::::res://control/rts_camera.tscn
@@ -38,9 +38,9 @@ example.gdextension::GDExtension::5413677843355242150::1764689865::0::1::::<><><
 ::res://bin/windows/::1764689865
 ::res://control/::1775415271
 rts_camera.tscn::PackedScene::1319315634822753527::1775415271::0::1::::<><><>0<>0<><>::
-::res://level/::1775419047
+::res://level/::1775425490
 checkboard.png::CompressedTexture2D::9186349460619608684::1764694943::1764694943::1::::<><><>0<>0<>6f322ffc68543047e563586ca32b79d4<>res://.godot/imported/checkboard.png-130d133a6029e1ca9a92686e2c703873.s3tc.ctex::
-grass.tscn::PackedScene::-1::1775419047::0::1::::<><><>0<>0<><>::
+grass.tscn::PackedScene::8902830225290907902::1775425490::0::1::::<><><>0<>0<><>::uid://dh0b6eb30omyu::::res://assets/shaders/spatial/outlines.gdshader<>uid://dllo4l5bnyp67::::res://assets/shaders/spatial/cel_shader.gdshader<>uid://n6wegmco5lgl::::res://assets/shaders/spatial/foliage_cel_shader.gdshader<>uid://cvj1q5myd7yhm::::res://assets/sprites/foliage/pixelart_foliage_spritesheet.png
 sky.gdshader::Shader::4491687189778309942::1764694943::0::1::::<><><>0<>0<><>::
 temporary_level.tscn::PackedScene::8279289030407758400::1767462622::0::1::::<><><>0<>0<><>::uid://d3463lq4inomu::::res://level/checkboard.png
 ::res://mob/::1764694943

@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://w4au2xsvn836" path="res://terrain_api.tscn" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="2_h2yge"]
-[ext_resource type="PackedScene" path="res://level/grass.tscn" id="3_h2yge"]
+[ext_resource type="PackedScene" uid="uid://dy3ukv6yp0g03" path="res://level/grass.tscn" id="3_h2yge"]
 
 [sub_resource type="Environment" id="Environment_ig7tw"]
 background_mode = 1
@@ -14,6 +14,7 @@ tonemap_mode = 2
 tonemap_exposure = 1.05
 tonemap_white = 0.95
 ssao_intensity = 1.0
+glow_enabled = true
 glow_normalized = true
 glow_intensity = 0.2
 fog_enabled = true
@@ -30,12 +31,6 @@ volumetric_fog_emission = Color(0.0431373, 0.0431373, 0.0431373, 1)
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_ig7tw")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.7071068, -0.6123726, 0.35355315, 0, 0.49999964, 0.8660256, -0.7071068, -0.6123726, 0.35355315, 0, 10, 0)
-visible = false
-shadow_enabled = true
-directional_shadow_max_distance = 40.0
-
 [node name="terrainAPI" parent="." instance=ExtResource("2_0xm2m")]
 visible = false
 
@@ -45,3 +40,8 @@ current = true
 
 [node name="Main" parent="." instance=ExtResource("3_h2yge")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5475693, 0, 2.0506678)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.9317796, 0.17385732, -0.3186855, 0.17939876, 0.542656, 0.82057333, 0.31559926, -0.82176524, 0.47444603, 3.1079535, 9.752657, -6.1085615)
+shadow_enabled = true
+directional_shadow_max_distance = 40.0
