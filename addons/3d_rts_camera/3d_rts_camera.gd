@@ -1,4 +1,4 @@
-extends Camera3D
+extends PixelPerfectCamera3D
 
 # =========================
 # Camera movement settings
@@ -44,6 +44,8 @@ var _yaw: float = 0.0
 var _pitch: float = 0.8              
 
 func _ready() -> void:
+	super()
+	orbit_distance = default_ortho_size
 	target_orbit_distance = orbit_distance
 	var pmin := deg_to_rad(pitch_min_deg)
 	var pmax := deg_to_rad(pitch_max_deg)
@@ -51,6 +53,9 @@ func _ready() -> void:
 	_update_camera_position()
 
 func _process(delta: float) -> void:
+	super(delta)
+
+func _physics_process(delta: float) -> void:
 	var movement := Vector3.ZERO
 
 	# Keyboard movement
@@ -94,6 +99,7 @@ func _process(delta: float) -> void:
 	# Smooth Zoom Interpolation
 	if not is_equal_approx(orbit_distance, target_orbit_distance):
 		orbit_distance = lerp(orbit_distance, target_orbit_distance, zoom_smoothing * delta)
+		default_ortho_size = orbit_distance 
 		position_changed = true
 		
 	# Only update transform if something actually changed
@@ -144,7 +150,7 @@ func _update_camera_position() -> void:
 		cos(_yaw) * cos(_pitch)
 	).normalized()
 
-	position = orbit_center + dir * orbit_distance
+	position = orbit_center + dir * 25.0
 	look_at(orbit_center, Vector3.UP)
 
 	current_height = orbit_distance * sin(_pitch)

@@ -3,7 +3,7 @@
 [ext_resource type="Shader" uid="uid://dh0b6eb30omyu" path="res://assets/shaders/spatial/outlines.gdshader" id="3_b6bv0"]
 [ext_resource type="Shader" uid="uid://dllo4l5bnyp67" path="res://assets/shaders/spatial/cel_shader.gdshader" id="3_y0acb"]
 [ext_resource type="Shader" uid="uid://n6wegmco5lgl" path="res://assets/shaders/spatial/foliage_cel_shader.gdshader" id="4_j4d2a"]
-[ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/RtsCamera/rtscam.tscn" id="5_b6bv0"]
+[ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="5_b6bv0"]
 [ext_resource type="Texture2D" uid="uid://cvj1q5myd7yhm" path="res://assets/sprites/foliage/pixelart_foliage_spritesheet.png" id="5_u81e1"]
 
 [sub_resource type="Environment" id="Environment_y0acb"]
@@ -464,5 +464,4 @@ material_override = SubResource("ShaderMaterial_u81e1")
 cast_shadow = 0
 multimesh = SubResource("MultiMesh_j4d2a")
 
-[node name="RTScamera" parent="World" unique_id=655530787 instance=ExtResource("5_b6bv0")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -8)
+[node name="RTScamera" parent="." unique_id=1070973725 instance=ExtResource("5_b6bv0")]
