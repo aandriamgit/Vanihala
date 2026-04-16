@@ -1,26 +1,17 @@
 extends PixelPerfectCamera3D
 
-# =========================
-# Camera movement settings
-# =========================
 @export_category("Camera movement")
 @export var camera_speed: float = 20.0
-@export var movement_smoothing: float = 8.0 # Higher = stops faster, Lower = feels like it's on ice
+@export var movement_smoothing: float = 8.0
 @export var camera_zoom_speed: float = 2.0 
 @export var camera_zoom_min: float = 10.0
 @export var camera_zoom_max: float = 50.0
 @export var zoom_smoothing: float = 10.0   
 
-# =========================
-# Edge scrolling settings
-# =========================
 @export_category("Edge scrolling")
 @export var edge_scroll_margin: float = 20.0
 @export var edge_scroll_speed: float = 15.0 
 
-# =========================
-# Rotation (MMB) settings
-# =========================
 @export_category("Rotation")
 @export var yaw_sensitivity: float = 0.50
 @export var pitch_sensitivity: float = 0.18
@@ -29,11 +20,8 @@ extends PixelPerfectCamera3D
 @export var pitch_max_deg: float = 80.0
 @export var capture_mouse_on_mmb: bool = false
 
-# =========================
-# Runtime state
-# =========================
 var orbit_center: Vector3 = Vector3.ZERO
-var velocity: Vector3 = Vector3.ZERO         # NEW: Tracks current panning speed
+var velocity: Vector3 = Vector3.ZERO
 var orbit_distance: float = 25.0
 var target_orbit_distance: float = 25.0 
 var current_height: float = 20.0     
@@ -53,12 +41,8 @@ func _ready() -> void:
 	_update_camera_position()
 
 func _process(delta: float) -> void:
-	super(delta)
-
-func _physics_process(delta: float) -> void:
 	var movement := Vector3.ZERO
 
-	# Keyboard movement
 	if Input.is_action_pressed("ui_right"):
 		movement.x += 1
 	if Input.is_action_pressed("ui_left"):
@@ -68,7 +52,6 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("ui_down"):
 		movement.z += 1
 
-	# Edge scrolling
 	var mouse_pos := get_viewport().get_mouse_position()
 	var viewport_size = get_viewport().size
 	if mouse_pos.x < edge_scroll_margin:
@@ -83,30 +66,27 @@ func _physics_process(delta: float) -> void:
 	var speed_multiplier := 2.0 if Input.is_action_pressed("ui_shift") else 1.0
 	var position_changed := false
 
-	# Calculate desired velocity
 	var target_velocity := Vector3.ZERO
 	if movement.length() > 0.0:
 		target_velocity = movement.normalized().rotated(Vector3.UP, _yaw) * camera_speed * speed_multiplier
 		
-	# Smoothly interpolate current velocity towards target velocity
 	velocity = velocity.lerp(target_velocity, movement_smoothing * delta)
 
-	# Apply velocity to orbit center (only if we are moving)
 	if velocity.length_squared() > 0.001:
 		orbit_center += velocity * delta
 		position_changed = true
 
-	# Smooth Zoom Interpolation
 	if not is_equal_approx(orbit_distance, target_orbit_distance):
 		orbit_distance = lerp(orbit_distance, target_orbit_distance, zoom_smoothing * delta)
 		default_ortho_size = orbit_distance 
 		position_changed = true
 		
-	# Only update transform if something actually changed
 	if position_changed:
 		_update_camera_position()
+	super(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
+	super(event)
 	if event is InputEventMouseButton:
 		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			target_orbit_distance = max(camera_zoom_min, target_orbit_distance - camera_zoom_speed)
@@ -140,9 +120,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		_update_camera_position()
 
-# =========================
-# Helpers
-# =========================
 func _update_camera_position() -> void:
 	var dir := Vector3(
 		sin(_yaw) * cos(_pitch),
