@@ -18,7 +18,7 @@ offset_bottom = 40.0
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=1462566488]
 handle_input_locally = false
-size = Vector2i(640, 380)
+size = Vector2i(640, 360)
 render_target_update_mode = 4
 
 [node name="Main" parent="SubViewportContainer/SubViewport" unique_id=1968846408 instance=ExtResource("2_xgcak")]
