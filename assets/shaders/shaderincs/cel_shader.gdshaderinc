@@ -20,14 +20,15 @@ uniform bool  dither_directional = false;
 group_uniforms;
 
 float _toon_bayer(vec2 coords) {
-    const float bayer[16] = float[16](
-         0.0,  8.0,  2.0, 10.0,
-        12.0,  4.0, 14.0,  6.0,
-         3.0, 11.0,  1.0,  9.0,
-        15.0,  7.0, 13.0,  5.0
-    );
-    ivec2 p = ivec2(floor(coords)) & ivec2(3);
-    return bayer[p.y * 4 + p.x] / 16.0;
+
+	const mat4 bayer = mat4(
+	vec4(0.0, 12.0, 3.0, 15.0),
+        vec4(8.0,  4.0, 11.0,  7.0),
+        vec4(2.0, 14.0,  1.0, 13.0),
+        vec4(10.0, 6.0,  9.0,  5.0)
+	);
+	ivec2 p = ivec2(floor(coords)) % 4;
+	return bayer[p.x][p.y] / 16.0;
 }
 
 vec2 _toon_world_pixel(vec3 world_pos, vec3 cam_right, vec3 cam_up) {

@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://d4dv5a6xeq3s4"]
-
-[ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="1_flo40"]
-
-[node name="Node3D" type="Node3D"]
-
-[node name="RTScamera" parent="." instance=ExtResource("1_flo40")]
-keep_aspect = 0

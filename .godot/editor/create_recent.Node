@@ -1,5 +1,9 @@
-Camera3D
-rtsCamera
+res://systems/readme_node/readme_node.gd
+Node3D
+Node
+MultiMeshInstance3D
 MeshInstance3D
-terrainAPI
-WorldEnvironment
+Camera3D
+Control
+SubViewport
+SubViewportContainer

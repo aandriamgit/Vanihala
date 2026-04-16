@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://dnaok7ffiy8wt"]
+
+[ext_resource type="Shader" uid="uid://cd7lrv1mr8ssl" path="res://assets/shaders/canvas_item/upscale_and_offset.gdshader" id="1_ev0e6"]
+[ext_resource type="PackedScene" uid="uid://7t5vhgwo6vt8" path="res://scenes/levels/main.tscn" id="2_xgcak"]
+[ext_resource type="Script" uid="uid://cevmeljflpju2" path="res://systems/main_renderer/scripts/pixel_perfect_scaler.gd" id="3_4a2j5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_41skh"]
+shader = ExtResource("1_ev0e6")
+shader_parameter/texel_offset = Vector2(0, 0)
+
+[node name="MainRenderer" type="Node2D" unique_id=307853639]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1716506454]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_41skh")
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=1462566488]
+handle_input_locally = false
+size = Vector2i(640, 380)
+render_target_update_mode = 4
+
+[node name="Main" parent="SubViewportContainer/SubViewport" unique_id=1968846408 instance=ExtResource("2_xgcak")]
+
+[node name="PixelPerfectScaler" type="Control" parent="." unique_id=1473503251 node_paths=PackedStringArray("target_viewport")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("3_4a2j5")
+target_viewport = NodePath("../SubViewportContainer/SubViewport")

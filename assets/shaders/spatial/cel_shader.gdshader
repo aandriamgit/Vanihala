@@ -9,6 +9,7 @@ varying float line_mask;
 void vertex() {
     world_normal = toon_vertex(MODEL_NORMAL_MATRIX, NORMAL);
     world_pos    = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+    line_mask	 = 0.0;
 }
 
 void fragment() {

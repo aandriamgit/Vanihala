@@ -1,2 +1,7 @@
-res://level/grass.tscn
-res://main.tscn
+res://scenes/levels/main.tscn
+res://assets/shaders/canvas_item/upscale_and_offset.gdshader
+res://assets/shaders/spatial/outlines.gdshader
+res://assets/shaders/shaderincs/cel_shader.gdshaderinc
+res://assets/shaders/spatial/cel_shader.gdshader
+res://assets/shaders/shaderincs/foliage_cel_shader.gdshaderinc
+res://assets/shaders/spatial/foliage_cel_shader.gdshader
