@@ -128,7 +128,8 @@ func _update_camera_position() -> void:
 	).normalized()
 
 	position = orbit_center + dir * 25.0
-	look_at(orbit_center, Vector3.UP)
+	if _is_mmb_rotating or get_tree().get_frame() <= 1:
+		look_at(orbit_center, Vector3.UP)
 
 	current_height = orbit_distance * sin(_pitch)
 	orbit_radius   = orbit_distance * cos(_pitch)
