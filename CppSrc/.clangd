@@ -1,0 +1,4 @@
+CompileFlags:
+  Remove: [-fno-gnu-unique]
+  CompilationDatabase:  /home/aandriam/Godot/godot_test_gdextension
+  CompilationDatabase:  /home/aandriam/Godot/godot_test_gdextension/godot-cpp/
