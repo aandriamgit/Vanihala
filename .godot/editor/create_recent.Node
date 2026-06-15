@@ -1,4 +1,5 @@
-res://systems/readme_node/readme_node.gd
+rtsCamera
+terrainAPI
 Node3D
 Node
 MultiMeshInstance3D

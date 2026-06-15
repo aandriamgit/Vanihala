@@ -5,7 +5,7 @@
 [ext_resource type="Shader" uid="uid://n6wegmco5lgl" path="res://assets/shaders/spatial/foliage_cel_shader.gdshader" id="4_j4d2a"]
 [ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="5_b6bv0"]
 [ext_resource type="Texture2D" uid="uid://cvj1q5myd7yhm" path="res://assets/sprites/foliage/pixelart_foliage_spritesheet.png" id="5_u81e1"]
-[ext_resource type="Script" uid="uid://bv4uhcxb2ecu" path="res://addons/compositor_effects/tilt_shift/post_process_tilt_shift.gd" id="6_b6bv0"]
+[ext_resource type="Script" uid="uid://da2mj20re6vgg" path="res://addons/compositor_effects/levels/post_process_levels.gd" id="6_b6bv0"]
 
 [sub_resource type="Environment" id="Environment_y0acb"]
 background_mode = 2
@@ -421,7 +421,7 @@ effect_callback_type = 4
 needs_motion_vectors = false
 needs_normal_roughness = false
 script = ExtResource("6_b6bv0")
-metadata/_custom_type_script = "uid://bv4uhcxb2ecu"
+metadata/_custom_type_script = "uid://da2mj20re6vgg"
 
 [sub_resource type="Compositor" id="Compositor_vkq25"]
 compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_ubwgw")])
@@ -480,3 +480,5 @@ multimesh = SubResource("MultiMesh_j4d2a")
 
 [node name="RTScamera" parent="." unique_id=1070973725 instance=ExtResource("5_b6bv0")]
 compositor = SubResource("Compositor_vkq25")
+
+[node name="terrainAPI" type="terrainAPI" parent="." unique_id=523108993]

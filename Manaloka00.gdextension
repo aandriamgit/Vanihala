@@ -1,0 +1,8 @@
+[configuration]
+
+entry_symbol = "Manaloka00_library_init"
+compatibility_minimum = "4.2"
+
+[libraries]
+
+linux.debug.x86_64 = "res://bin/linux/libManaloka00.linux.template_debug.x86_64.so"
