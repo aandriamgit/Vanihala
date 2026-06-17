@@ -1,3 +1,11 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+*.tmp
+
+bin/
+*.os
+CppSrc/gen/
+
+.DS_Store
+Thumbs.db
