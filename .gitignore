@@ -2,6 +2,15 @@
 .godot/
 /android/
 *.tmp
+*.godot.meta
+*.backup
+*.autosave
+
+.godot/editor/workspace*
+.godot/editor/layout*
+.godot/editor/project_metadata.cfg
+.godot/editor/editor_script_doc_cache.res
+.godot/editor/filesystem_update*
 
 bin/
 *.os
