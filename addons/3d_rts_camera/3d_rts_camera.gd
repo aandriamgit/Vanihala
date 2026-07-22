@@ -1,4 +1,4 @@
-extends PixelPerfectCamera3D
+extends Camera3D
 
 @export_category("Camera movement")
 @export var camera_speed: float = 20.0
@@ -33,8 +33,6 @@ var _pitch: float = 0.8
 
 func _ready() -> void:
 	super()
-	orbit_distance = default_ortho_size
-	target_orbit_distance = orbit_distance
 	var pmin := deg_to_rad(pitch_min_deg)
 	var pmax := deg_to_rad(pitch_max_deg)
 	_pitch = clamp(_pitch, pmin, pmax)
@@ -78,12 +76,10 @@ func _process(delta: float) -> void:
 
 	if not is_equal_approx(orbit_distance, target_orbit_distance):
 		orbit_distance = lerp(orbit_distance, target_orbit_distance, zoom_smoothing * delta)
-		default_ortho_size = orbit_distance 
 		position_changed = true
 		
 	if position_changed:
 		_update_camera_position()
-	super(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	super(event)

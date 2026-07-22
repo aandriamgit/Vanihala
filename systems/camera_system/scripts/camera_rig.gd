@@ -3,7 +3,7 @@ class_name CameraRig extends Node3D
 @export var move_speed : float = 5.0
 @export var rotation_duration : float = 0.3 # seconds per 45° step
 
-@onready var camera: PixelPerfectCamera3D = %Camera3D
+@onready var camera: Camera3D = %Camera3D
 
 var _target_rotation_y : float = 0.0
 var _tween : Tween
