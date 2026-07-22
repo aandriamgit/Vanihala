@@ -482,3 +482,4 @@ multimesh = SubResource("MultiMesh_j4d2a")
 compositor = SubResource("Compositor_vkq25")
 
 [node name="terrainAPI" type="terrainAPI" parent="." unique_id=523108993]
+visible = false
