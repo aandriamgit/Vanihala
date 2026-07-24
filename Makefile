@@ -1,10 +1,12 @@
-.PHONY: all re
+GDEXTENSION_DIR ?= /home/aandriam/Godot/godot_test_gdextension
+
+.PHONY: all clean re
 
 all:
-	cd /home/aandriam/Godot/godot_test_gdextension && scons compiledb=yes
+	cd $(GDEXTENSION_DIR) && scons compiledb=yes
 
 clean:
-	cd /home/aandriam/Godot/godot_test_gdextension && scons -c
+	cd $(GDEXTENSION_DIR) && scons -c
 
-re:
-	clear && cd /home/aandriam/Godot/godot_test_gdextension && scons -c && scons compiledb=yes
+re: clean all
+	@echo "Rebuild complete"

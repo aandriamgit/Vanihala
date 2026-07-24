@@ -1,7 +1,9 @@
-#ifndef EXAMPLE_REGISTER_TYPES_H
-# define EXAMPLE_REGISTER_TYPES_H
+#ifndef MANALOKA00_REGISTER_TYPES_H
+#define MANALOKA00_REGISTER_TYPES_H
 
-void	initialize_gdextension_types(void);
-void	uninitialize_gdextension_types(void);
+#include <godot_cpp/core/defs.hpp>
 
-#endif
+void initialize_gdextension_types(godot::ModuleInitializationLevel p_level);
+void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level);
+
+#endif // MANALOKA00_REGISTER_TYPES_H

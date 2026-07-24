@@ -18,3 +18,5 @@ CppSrc/gen/
 
 .DS_Store
 Thumbs.db
+*.os
+CppSrc/*.os
