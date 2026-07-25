@@ -32,7 +32,6 @@ var _yaw: float = 0.0
 var _pitch: float = 0.8              
 
 func _ready() -> void:
-	super()
 	var pmin := deg_to_rad(pitch_min_deg)
 	var pmax := deg_to_rad(pitch_max_deg)
 	_pitch = clamp(_pitch, pmin, pmax)
@@ -82,7 +81,6 @@ func _process(delta: float) -> void:
 		_update_camera_position()
 
 func _unhandled_input(event: InputEvent) -> void:
-	super(event)
 	if event is InputEventMouseButton:
 		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			target_orbit_distance = max(camera_zoom_min, target_orbit_distance - camera_zoom_speed)

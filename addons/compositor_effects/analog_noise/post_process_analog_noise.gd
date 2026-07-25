@@ -213,7 +213,7 @@ func _render_callback(
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-r		_cleanup()
+		_cleanup()
 
 
 func _cleanup() -> void:

@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="VanihalaProject"
+run/main_scene="uid://dreyuflj2m6yf"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [display]
