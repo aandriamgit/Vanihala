@@ -21,6 +21,7 @@ The game is three simulations at different scales. Never blur them.
 Key principle: the macro layer covers the entire world cheaply as pure data; only the player's active zone is materialized as 3D. This is how a huge map runs on weak hardware.
 
 ## Repository layout
+- `docs/` — project docs. `docs/study_plan.md` is the mastery plan (concepts + exercises + acceptance checks) for all roadmap phases — consult it when working on any phase.
 - `project.godot` — Godot 4.6, Forward Plus, Jolt Physics, 1920×1080. Will be reworked for low internal res + FSR upscale.
 - `scenes/` — main scene is `scenes/levels/mini_main.tscn` (NOTE: `main.tscn` referenced in older docs does not exist).
 - `systems/` — GDScript systems (`camera_system/camera_rig.gd`, `readme_node/` is junk).
@@ -37,7 +38,7 @@ Key principle: the macro layer covers the entire world cheaply as pure data; onl
 - The compiled `.so` lands in `bin/linux/libManaloka00.linux.template_debug.x86_64.so` (`bin/` is a real dir, gitignored).
 
 ## Roadmap (locked order)
-2. **Phase 1 — Settle the 2.5D Tiny Glade render**: ortho camera (adapt RTS camera), soft pastel material mode, one tight 2048 directional cascade, foliage MultiMesh, default post stack = color grade + vignette only, tilt-shift DoF as optional toggle, "glade" test diorama scene, freeze the look in a reference doc.
+2. **Phase 1 — Settle the 2.5D Tiny Glade render**: ortho camera (adapt RTS camera), soft pastel material mode, one tight 2048 directional cascade, foliage MultiMesh, default post stack = color grade + vignette only, tilt-shift DoF as optional toggle, "glade" test diorama scene, freeze the look in `docs/phase1_look.md`. Full concepts + exercises in `docs/study_plan.md` (Phase 1).
 3. **Phase 2 — Performance backbone (C++ DOD core)**: restructure `CppSrc/` into `sim/` + `bind/` + `bench/`, SoA foundations (no allocation in hot paths), job system with lock-free SPSC queues to Godot main thread, fixed-timestep tick model with double-buffered snapshots, **Tracy profiler** on both sides.
 4. **Phase 3 — First DOD feature: terrain**: SoA heightmap, seeded noise gen, sculpting brushes, dirty-chunk mesh rebuild → Godot ArrayMesh, streaming around camera, foliage placement from sim, delta persistence (save = edits only; world re-derived from seed).
 5. **Deferred** (only after foundation is settled): macro world gen → procedural buildings (path → wall → masonry → roof) → Vic3 economy (aggregated pop groups, dirty-flag market ticks) → 4X layer → Kenshi local sim (staggered AI 1–4 Hz, hierarchical pathfinding) → UI → SIMD/polish passes.

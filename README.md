@@ -3,6 +3,9 @@
 * `cd Vanihala`
 * `bin/` is gitignored - the built `.so` lands there
 
+# DOCS
+* [`docs/study_plan.md`](docs/study_plan.md) — mastery study plan (concepts + exercises + acceptance checks) for every phase below
+
 # ROADMAP
 1. Phase 1: Settle the 2.5D render
     * Ortho camera - RTS rig
