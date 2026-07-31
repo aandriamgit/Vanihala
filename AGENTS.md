@@ -26,19 +26,19 @@ Key principle: the macro layer covers the entire world cheaply as pure data; onl
 - `systems/` — GDScript systems (`camera_system/camera_rig.gd`, `readme_node/` is junk).
 - `addons/` — reusable plugins: `3d_rts_camera/` (orbit camera to adapt for 2.5D ortho), `compositor_effects/` (30+ compute-based post-process effects — keep the framework, keep only cheap effects in the default stack).
 - `assets/shaders/` — `cel_shader.gdshader` + `.gdshaderinc` (to be given a "soft pastel" mode), `foliage_cel_shader.gdshader` (billboard MultiMesh foliage — the cheap path, keep), `outlines.gdshader` (probably NOT part of the Tiny Glade look — keep around, default off).
+- `CppSrc/` — **ALL C++ lives here** (`sim/` + `bind/` + `bench/`), the only C++ in the project.
 
 ## Build system
 - Native C++ builds via **SCons** in the external repo `godot_test_gdextension` (hardcoded in `Makefile`). Never run `scons` inside this repo.
-- **Target structure for the external repo (Phase 2 of roadmap):**
-  - `sim/` — pure C++ DOD static lib, **zero Godot dependencies**.
-  - `bind/` — thin GDExtension binding layer (sim ⇄ Godot).
-  - `bench/` — CLI benchmark/test harness, runs headless without Godot.
-- The compiled `.so` is symlinked into this repo as `bin/linux/libManaloka00.linux.template_debug.x86_64.so` (current `bin/` is a real dir with a stale lib that registers nothing).
+- **Target structure for `CppSrc/` (Phase 2 of roadmap):**
+  - `CppSrc/sim/` — pure C++ DOD static lib, **zero Godot dependencies**.
+  - `CppSrc/bind/` — thin GDExtension binding layer (sim ⇄ Godot).
+  - `CppSrc/bench/` — CLI benchmark/test harness, runs headless without Godot.
+- The compiled `.so` lands in `bin/linux/libManaloka00.linux.template_debug.x86_64.so` (`bin/` is a real dir, gitignored).
 
 ## Roadmap (locked order)
-1. **Phase 0 — Repo reset**: strip stale C++ cruft, GLB, readme node; new main scene with ortho 2.5D camera + flat terrain; project.godot low-res + FSR.
 2. **Phase 1 — Settle the 2.5D Tiny Glade render**: ortho camera (adapt RTS camera), soft pastel material mode, one tight 2048 directional cascade, foliage MultiMesh, default post stack = color grade + vignette only, tilt-shift DoF as optional toggle, "glade" test diorama scene, freeze the look in a reference doc.
-3. **Phase 2 — Performance backbone (C++ DOD core)**: restructure external repo into `sim/` + `bind/` + `bench/`, SoA foundations (no allocation in hot paths), job system with lock-free SPSC queues to Godot main thread, fixed-timestep tick model with double-buffered snapshots, **Tracy profiler** on both sides.
+3. **Phase 2 — Performance backbone (C++ DOD core)**: restructure `CppSrc/` into `sim/` + `bind/` + `bench/`, SoA foundations (no allocation in hot paths), job system with lock-free SPSC queues to Godot main thread, fixed-timestep tick model with double-buffered snapshots, **Tracy profiler** on both sides.
 4. **Phase 3 — First DOD feature: terrain**: SoA heightmap, seeded noise gen, sculpting brushes, dirty-chunk mesh rebuild → Godot ArrayMesh, streaming around camera, foliage placement from sim, delta persistence (save = edits only; world re-derived from seed).
 5. **Deferred** (only after foundation is settled): macro world gen → procedural buildings (path → wall → masonry → roof) → Vic3 economy (aggregated pop groups, dirty-flag market ticks) → 4X layer → Kenshi local sim (staggered AI 1–4 Hz, hierarchical pathfinding) → UI → SIMD/polish passes.
 
@@ -59,5 +59,5 @@ Key principle: the macro layer covers the entire world cheaply as pure data; onl
 - Do not run `scons` in this repo; build in `godot_test_gdextension`.
 - Do not commit binaries (`.so` in `bin/`).
 - Do not hand-edit large baked sections of `.tscn` files (e.g., MultiMesh transform buffers).
-- Do not add GDExtension classes that wrap Godot nodes into the sim; keep `sim/` Godot-free.
+- Do not add GDExtension classes that wrap Godot nodes into the sim; keep `CppSrc/sim/` Godot-free.
 - Do not add gameplay systems (economy/4X/combat) before Phases 0–3 are done — the foundation is the point.
