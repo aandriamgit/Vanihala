@@ -16,14 +16,15 @@ extends Camera3D
 @export var yaw_sensitivity: float = 0.50
 @export var pitch_sensitivity: float = 0.18
 @export var max_step_deg: float = 3.0
-@export var pitch_min_deg: float = 10.0
-@export var pitch_max_deg: float = 80.0
+@export var pitch_min_deg: float = 35.0
+@export var pitch_max_deg: float = 60.0
 @export var capture_mouse_on_mmb: bool = false
 
 var orbit_center: Vector3 = Vector3.ZERO
 var velocity: Vector3 = Vector3.ZERO
 var orbit_distance: float = 25.0
-var target_orbit_distance: float = 25.0 
+var target_orbit_distance: float = 25.0
+var target_size: float = 25.0
 var current_height: float = 20.0     
 var orbit_radius: float = 20.0       
 
@@ -32,6 +33,7 @@ var _yaw: float = 0.0
 var _pitch: float = 0.8              
 
 func _ready() -> void:
+	size = target_size
 	var pmin := deg_to_rad(pitch_min_deg)
 	var pmax := deg_to_rad(pitch_max_deg)
 	_pitch = clamp(_pitch, pmin, pmax)
@@ -73,9 +75,8 @@ func _process(delta: float) -> void:
 		orbit_center += velocity * delta
 		position_changed = true
 
-	if not is_equal_approx(orbit_distance, target_orbit_distance):
-		orbit_distance = lerp(orbit_distance, target_orbit_distance, zoom_smoothing * delta)
-		position_changed = true
+	if not is_equal_approx(size, target_size):
+		size = lerp(size, target_size, zoom_smoothing * delta)
 		
 	if position_changed:
 		_update_camera_position()
@@ -83,9 +84,9 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			target_orbit_distance = max(camera_zoom_min, target_orbit_distance - camera_zoom_speed)
+			target_size = max(camera_zoom_min, target_size - camera_zoom_speed)
 		elif event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			target_orbit_distance = min(camera_zoom_max, target_orbit_distance + camera_zoom_speed)
+			target_size = min(camera_zoom_max, target_size + camera_zoom_speed)
 
 		if event.button_index == MOUSE_BUTTON_MIDDLE:
 			_is_mmb_rotating = event.pressed

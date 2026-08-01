@@ -1,8 +1,31 @@
 [gd_scene format=3 uid="uid://dreyuflj2m6yf"]
 
 [ext_resource type="PackedScene" uid="uid://dlm27kuuxtxre" path="res://scenes/levels/halloween_haunted_house.glb" id="1_5xla7"]
+[ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="2_odewy"]
+[ext_resource type="Script" uid="uid://bv4uhcxb2ecu" path="res://addons/compositor_effects/tilt_shift/post_process_tilt_shift.gd" id="3_pm8i0"]
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_luusr"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = true
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = false
+script = ExtResource("3_pm8i0")
+focus_width = 0.37
+blur_amount = 4.0
+strength = 0.5
+metadata/_custom_type_script = "uid://bv4uhcxb2ecu"
+
+[sub_resource type="Compositor" id="Compositor_y2046"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_luusr")])
 
 [node name="Node3D" type="Node3D" unique_id=747140488]
 
 [node name="Sketchfab_Scene" parent="." unique_id=2121166809 instance=ExtResource("1_5xla7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.50364745, -1.1920929e-07, -1.2156119)
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, -0.50364745, -1.1920929e-07, -1.2156119)
+
+[node name="RTScamera" parent="." unique_id=680522844 instance=ExtResource("2_odewy")]
+compositor = SubResource("Compositor_y2046")
+projection = 1
+size = 25.0
