@@ -1,4 +1,4 @@
-# Vanihala — Mastery Study Plan (Phases 1–4)
+# Vanihala — Mastery Study Plan (Phases 1–5)
 
 Goal: learn each concept **by doing**, on the actual repo, with a measurable acceptance test per exercise.
 Convention: every exercise ends with a **check** — a concrete thing you can observe/measure.
@@ -152,6 +152,7 @@ Related files: `addons/3d_rts_camera/`, `assets/shaders/spatial/`, `assets/shade
 
 Target: restructure `CppSrc/` into `sim/` + `bind/` + `bench/`; SoA sim core; job system; fixed timestep; Tracy.
 Related files: `CppSrc/` (currently only `gen/` + `register_types.*` stubs), `Makefile` (builds in `godot_test_gdextension`, never scons here).
+NOTE: only **2.1 (the sim/bind/bench skeleton)** gates Phase 3 — `sim/worldgen` is pure C++ and headless; it can be built the moment 2.1 lands, without waiting for 2.2–2.5.
 
 ## 2.1 C++ structure: sim / bind / bench
 
@@ -184,7 +185,7 @@ Related files: `CppSrc/` (currently only `gen/` + `register_types.*` stubs), `Ma
 - None yet — this is the phase that builds it. Study patterns in `CppSrc/sim/` you'll create.
 
 ### Exercises
-1. Write `CppSrc/sim/agent_soa.h`: SoA arrays for position/velocity/health/type, fixed capacity 65536, a `spawn/despawn` free-list. 
+1. Write `CppSrc/sim/agent_soa.h`: SoA arrays for position/velocity/health/type, fixed capacity 65536, a `spawn/despawn` free-list.
 2. Add a tick that integrates positions. Write the AoS version too. Bench both in `bench/` at N=65536 for 1000 ticks.
 3. Run under `perf stat` (or Tracy later) and observe cache-miss differences (LLC-load-misses).
 
@@ -244,27 +245,151 @@ Related files: `CppSrc/` (currently only `gen/` + `register_types.*` stubs), `Ma
 
 ---
 
-# PHASE 3 — First DOD feature: terrain
+# PHASE 3 — Geographic world generation (`sim/worldgen`)
 
-Target: SoA heightmap, seeded noise, brushes, dirty-chunk rebuild → ArrayMesh, streaming, foliage from sim, delta persistence.
+Target: the GAPS pipeline ("Geographically Accurate Planet Simulator" by Devote Games) ported to a **flat map** in pure C++ DOD, zero Godot deps, headless-benchmarkable, deterministic from seed. This is the heart of the project — it IS the world.
+Related files: `CppSrc/sim/worldgen/` (new), `CppSrc/bench/` (new). Gates on Phase 2.1 only.
 
-## 3.1 SoA heightmap + seeded noise generation
+Pipeline order (each step is a milestone with its own dump + bench proof):
+`noise → plates → drift → boundaries/elevation → mountains → climate → erosion`.
+
+## 3.1 Seeded noise foundations (`noise.h`)
 
 ### Concepts to master
-- Heightmap as flat array: `heights[(y * size) + x]` in SoA (single contiguous float array) — the whole terrain is one array, not a grid of nodes.
-- Seeded procedural noise: value noise, Perlin/Simplex, fractal Brownian motion (fBm = layered octaves); SAME SEED → SAME WORLD (determinism requirement).
-- Chunks: world split into fixed tiles (e.g. 64×64); each chunk owns its own array; only chunks near the camera are generated (streaming, 3.2).
-- Coordinate systems: sim int64/fixed world coords (AGENTS precision contract) vs chunk-local float32 for Godot meshes.
-- Brush edits: sculpting = delta on top of generated base (edit map, see 3.4); brushes = stamped height offsets (gaussian/circle).
+- Hash-based value noise vs gradient noise (Perlin/Simplex): integer hashing = bit-deterministic and branchless, no float non-associativity across runs.
+- fBm (fractal Brownian motion): layered octaves with frequency doubling + amplitude halving — the base shape of continents.
+- Ridged fBm: shift noise down, `abs()`, flip/re-normalize — the abs creates sharp V-shaped ridges (this is the raw material for mountain ridges).
+- Fixed iteration order = determinism: the same seed must produce bit-identical arrays, every run, any core count.
+- Coordinate systems: integer grid coords for the coarse world; per-chunk sub-cell sampling via hash-interpolated noise (no global float drift).
 
 ### Exercises
-1. `CppSrc/sim/terrain.h`: `Chunk { float* heights; uint64 seed; }`, size 64×64, fBm noise with a configurable seed.
-2. Bench generation: 10×10 chunks headless; verify same seed → bit-identical output (determinism test).
-3. Add brushes (raise/lower/smooth) writing into an edit buffer that overrides generated heights.
+1. Implement `sim/worldgen/noise.h`: seeded value-noise + fBm + ridged fBm, over a 2048×1024 grid, SoA (one contiguous float array).
+2. Determinism test in bench: generate twice with the same seed, `memcmp` the arrays — must be bit-identical.
+3. `bench --dump noise` writes a PPM of the fBm field; eyeball that octaves layer cleanly.
+4. Bench cost: samples/second at full world size.
 
-**Check:** generation of a 10×10 chunk block completes in < ~50 ms headless; two runs with same seed produce identical floats.
+**Check:** same seed → bit-identical output; PPM shows smooth layered continents, not blobs or grid artifacts; generation is well under the world budget (see Phase 3 gate).
 
-## 3.2 Dirty-chunk mesh rebuild → Godot ArrayMesh
+## 3.2 Tectonic plates + continental drift (`plates.h`)
+
+### Concepts to master
+- Voronoi partition on a grid: seed cells → every cell takes the nearest seed's ID. Cheap via multi-source flood fill (BFS from all seeds in parallel passes) or a KD-tree over seeds — bench both, keep the faster.
+- Sub-points: a handful of sub-points per plate seed add organic variety to plate shapes (GAPS's trick; doubles shape quality at ~2× lookup cost — mitigated by the KD-tree).
+- Continental drift = iterated absorption: pick a random cell in a plate, cast a radius until it hits another plate's color, shift the pick point toward a random direction, convert all cells inside the radius. Repeat `age` times. One-shot at world creation — NEVER at runtime.
+- `age` as a world parameter: same seed + more drift steps = "older" world with different continents. This is how you get world variety without new seeds.
+- Wrap-around (seam): the grid is horizontally toroidal — neighbor lookups use `x = (x + W) % W`; plates glide across the seam and never see an edge. This is the flat-map equivalent of a planet's surface (X = longitude, Y = latitude).
+- Crust typing: continental seeds grow first (flood fill with land-ratio budget), oceanic fills the rest; oceanic plates' elevation is shifted down (continents = plate geometry, not noise).
+- Determinism under parallelism: drift steps are sequential; parallel passes must use fixed iteration order (no `parallel_for` with nondeterministic accumulation).
+
+### Exercises
+1. Implement plate generation + sub-points on the coarse grid; 12–50 plates by parameter.
+2. Implement the drift loop; `age` is a CLI parameter (`bench --age N`).
+3. Dump `plates` (plate ID) and `plate_type` (oceanic/continental) maps; compare against GAPS screenshots — plates must look Earth-like, NOT blocky rectangles.
+4. Determinism test: `--age 500` twice → bit-identical plate arrays.
+5. Seam test: dump the plate map and verify column 0 and column W−1 match seamlessly (same plate IDs across the wrap); a plate straddling the seam is one plate, not two.
+
+**Check:** plate boundaries are organic (no straight-line Voronoi artifacts at chunk scale); drift visibly reshapes continents; same seed+age → identical plates; drift step cost scales linearly with `age` and stays small; nothing special happens at the seam.
+
+## 3.3 Boundaries + elevation (`elevation.h`)
+
+### Concepts to master
+- Boundary detection that handles multi-plate junctions (not just 2-plate edges).
+- Boundary classification from relative plate motion: compare velocity vectors of adjacent plates (dot products across the edge) →
+  - convergent C+C → mountain range,
+  - convergent C+O → oceanic subduction: trench on the oceanic side + volcanic arc on the continental side,
+  - convergent O+O → island arc / coastline,
+  - divergent → rift (low elevation, new crust),
+  - transform → neutral (no elevation change).
+- Multi-source distance fields: BFS from boundary cells inward — elevation falls off with distance from the boundary (mountains hug the boundary, not the plate center). All BFS/neighbor passes are wrap-aware (column 0 and W−1 are neighbors; Y stays flat with poles at rows 0 and H−1).
+- Base elevation = boundary-driven value + fBm with the **first octave capped/remapped** (GAPS's fix for blobby continents) + edge smoothing across boundaries.
+- Sea level parameter: threshold on elevation splits ocean/land; oceanic plates sit below by default.
+
+### Exercises
+1. Implement boundary classification per boundary cell; store boundary type per cell.
+2. Implement multi-source distance fields (one pass per boundary class, parallel over cells, fixed order).
+3. Compose elevation: boundary field + capped-octave fBm + smoothing; apply sea level; dump `elevation` (grayscale PPM: deep ocean → peaks).
+4. Sweep `sea_level` and `land_ratio` params in bench; verify coastline extent responds.
+
+**Check:** mountain ranges follow plate boundaries as continuous chains (Himalayas/Andes-like), no blob mountains at continent centers; trenches are visible as low strips next to ranges; deterministic.
+
+## 3.4 Mountains — fractal ridge blending (`mountains.h`)
+
+### Concepts to master
+- Why Perlin mountains look "blobby": smooth gradients can't produce the sharp ridgelines that millions of years of water erosion create.
+- Ridge noise: take fBm, shift down, `abs()` (every negative becomes positive → a sharp V at the zero crossing), flip and renormalize to [0,1]; layer octaves of this for detail.
+- Blending: base Perlin decides WHERE mountains are; ridge octaves are added only inside the mountain mask; smooth blend (mask = boundary strength × elevation) so there's no hard cut.
+- Detail octaves confined to mountain zones — cost control (don't pay for ridges in the plains).
+
+### Exercises
+1. Implement ridge-noise octaves + mountain mask + smooth blend.
+2. Dump before/after (base elevation vs ridged): valleys between sharp ridges must be visible.
+3. Bench: ridge cost as % of total gen time; tune octave count to budget.
+
+**Check:** ridgelines are sharp and continuous, valleys read as valleys, snow-less "blob" mountains are gone; cost stays inside budget.
+
+## 3.5 Climate + biomes (`climate.h`)
+
+### Concepts to master
+- Temperature = latitude falloff + **altitude lapse rate** (temp drops ~6.5 °C/km) + noise. Flat-map latitude = Y coordinate (top = pole, bottom = pole, middle = equator); horizontal wrap does not affect latitude bands — the seam must never show a temperature jump.
+- Precipitation: moisture originates over ocean cells and advects along prevailing wind belts (simplified: latitude-dependent prevailing direction + moisture decay inland + orographic boost/rain shadow from ridges — GAPS page mentions rain shadow; cheap version = wind-weighted distance from ocean minus ridge blocking).
+- Biome lookup: Whittaker-style table temp × precipitation → biome (rainforest/tundra/desert/taiga/grassland...). A 2D lookup table, not a decision tree.
+- Snow: below a temperature threshold terrain turns to ice; gate by **steepness** (GAPS's trick: snow only on flatter parts → natural peaks, not icy cliffs).
+- Params: `temp_bias`, `precip_bias`, `ocean_amount` — the "12 sliders" GAPS exposes, mapped to ~6-8 core params.
+
+### Exercises
+1. Implement temperature map; dump `temperature` (blue cold → red hot): poles must be cold, equator hot, high mountains cold (lapse).
+2. Implement precipitation (wind-belt advection from ocean + rain shadow); dump `precipitation`.
+3. Implement biome table + snow (temp threshold + steepness gate); dump `biome` with a GAPS-like biome palette.
+4. Sweep `temp_bias`/`precip_bias`; verify desert bands at ~30° latitude, green tropics, ice at poles — like Earth.
+
+**Check:** biome map reads like a real planet: no "noise soup", deserts and rainforests in plausible bands, mountain peaks snow-capped only where they should be; deterministic.
+
+## 3.6 Erosion + rivers (`erosion.h`)
+
+### Concepts to master
+- Hydraulic erosion (cheap budgeted form): for a fixed number of iterations, move water downhill, pick up sediment on steep slopes, deposit on flat; carve valleys, round hills. Cost-capped: must stay ≤ 20% of total gen time.
+- Downhill flow accumulation: sum of upstream water per cell → **rivers** for free from the final heightmap; rivers flow to the sea, coast at sea level.
+- Erosion operates on the coarse elevation; fine chunks inherit it (they must not re-erode per-chunk or chunk borders would tear).
+- Determinism: fixed iteration order over cells; same seed → same rivers.
+
+### Exercises
+1. Implement the erosion pass with an iteration budget; dump before/after (valleys carved, sediment deposited).
+2. Implement flow accumulation; dump `rivers` (brightness = flow) over the elevation map.
+3. Bench: erosion % of total gen time; tune iterations to the 20% contract.
+
+**Check:** erosion cost ≤ 20% of generation; valleys carve into ridges; rivers drain to the ocean (no inland dead ends); deterministic.
+
+### Phase 3 completion gate
+- Whole world 2048×1024 coarse cells generated < 1–2 s on a 4-core potato, headless (`bench --world 2048x1024 --seed S --age A`).
+- Same seed + params → bit-identical world (automated test across all stages).
+- Coarse world ≤ ~25 MB (~9 bytes/cell SoA).
+- Erosion ≤ 20% of gen time; chunk sample < 1 ms.
+- Dumps (plates, elevation, temperature, precipitation, biome, rivers) look GAPS-plausible when compared side-by-side.
+- Bench prints per-stage timings; Tracy (2.5) shows the pipeline stages and any parallel passes.
+
+---
+
+# PHASE 4 — Terrain streaming in Godot (first integrated DOD feature)
+
+Target: chunks materialize the frozen worldgen data in Godot: sampler → ArrayMesh, streaming, foliage, delta saves. The old "first DOD feature: terrain" phase, now driven by `sim/worldgen`.
+Related files: `CppSrc/sim/worldgen/chunk.h` (new), `CppSrc/bind/`, `scenes/levels/mini_main.tscn`.
+
+## 4.1 Chunk sampler from worldgen (`chunk.h`)
+
+### Concepts to master
+- A chunk (64×64) samples the coarse world data (plate, elevation, biome per cell) + fine seeded octaves (fBm + ridge, chunk-local seed derived from world seed + chunk coords) → 64×64 float32 heights + biome/foliage masks.
+- Chunk-local float32 for Godot meshes vs sim int64/fixed world coords (AGENTS precision contract).
+- Sampling must be idempotent and cheap: same chunk → same data, no cross-chunk reads at fine scale (only coarse reads), so chunks are independent (streaming-friendly).
+- Seam safety: fine noise must be a pure function of world coords (hash the coordinate, not the chunk), so chunk borders never tear.
+
+### Exercises
+1. Implement `sample_chunk(world, cx, cy)`: heights + biome mask + slope + foliage-density mask.
+2. Bench: sample a 10×10 block of chunks headless; verify same chunk twice → identical floats.
+3. Dump one chunk's heightfield as PPM; zoom-check that it matches the coarse map it samples.
+
+**Check:** chunk sample < 1 ms; no visible seams when neighboring chunks are dumped side-by-side; determinism per chunk.
+
+## 4.2 Dirty-chunk mesh rebuild → Godot ArrayMesh
 
 ### Concepts to master
 - Mesh building from heightmap: vertex buffer (positions/normals/uv) + index buffer (triangles); Godot `ArrayMesh` / `SurfaceTool` (or raw `Mesh` API from bind).
@@ -279,73 +404,74 @@ Target: SoA heightmap, seeded noise, brushes, dirty-chunk rebuild → ArrayMesh,
 
 **Check:** sculpting one spot rebuilds exactly 1 (or a small set of) chunks; idle frame does zero mesh work.
 
-## 3.3 Streaming around the camera
+## 4.3 Streaming around the camera
 
 ### Concepts to master
 - Radius streaming: load/generate chunks within R of camera, unload beyond R+margin; "biggest map possible" without holding it in memory.
 - Load/unload queue: async generate on worker threads (job system from 2.3), hand off ready chunks to Godot main thread (SPSC from 2.3).
-- LOD (optional now): far chunks at lower vertex density — noted for later, not required Phase 3.
+- Seam handling: chunks within R of column 0 also spawn their wrapped duplicate at column W−1 (and vice-versa); the camera crossing the seam re-centers smoothly — the player never sees an edge. Chunk coords are stored modulo W for sim identity, with render-local x for Godot.
+- LOD (optional now): far chunks at lower vertex density — noted for later, not required Phase 4.
 - Memory budget: ~512 MB ceiling (AGENTS); streaming radius sized by chunk size × footprint.
 
 ### Exercises
 1. Walk the camera; keep 5×5 chunks resident, generate/unload as you cross chunk borders.
 2. Ensure generation happens off the main thread (Tracy: generation zones on workers, never on Godot thread).
 3. Measure: memory flat during a long walk, no frame spikes > 16.6 ms while streaming.
+4. Walk the camera across the seam; verify the wrapped duplicates appear, chunks unload on the far side, and there is no visible edge, pop, or hitch.
 
-**Check:** FPS stays stable while crossing chunk borders; memory footprint flat over a 10-minute walk.
+**Check:** FPS stays stable while crossing chunk borders AND the world seam; memory footprint flat over a 10-minute walk.
 
-## 3.4 Foliage placement from sim + delta persistence
+## 4.4 Foliage placement from sim + delta persistence
 
 ### Concepts to master
 - Sim-owned placement: foliage is DATA in sim (positions/types/variation arrays), not nodes — render materializes it into the MultiMesh (ties into 1.4).
-- Placement rules: density from noise/terrain slope/height in sim; per-chunk foliage arrays that stream with chunks.
-- Delta persistence: save = seed + edits ONLY; world re-derives from seed. Edits = brush stamps + placed/moved foliage + (later) buildings.
+- Placement rules: density from biome/foliage masks + slope + noise in sim (the masks from 4.1); per-chunk foliage arrays that stream with chunks.
+- Delta persistence: save = seed + age + params + edits ONLY; world re-derives from seed. Edits = brush stamps + placed/moved foliage + (later) buildings.
 - Save format: versioned binary, deltas keyed by chunk coords; loading = regenerate + replay deltas.
 
 ### Exercises
-1. Add foliage array per chunk in sim; place ~100 instances/chunk from slope+noise rules; expose to Godot as MultiMesh data.
-2. Implement save/load: serialize seed + edit stamps + foliage edits; load → regenerate → apply deltas; verify bit-identical to before save.
+1. Add foliage array per chunk in sim; place ~100 instances/chunk from biome/slope/noise rules; expose to Godot as MultiMesh data.
+2. Implement save/load: serialize seed + age + params + edit stamps + foliage edits; load → regenerate → apply deltas; verify bit-identical to before save.
 3. Bench save/load for a 10×10 area; delta file should be kilobytes (not the full world).
 
-**Check:** save after edits is small (seed + deltas), reload matches exactly (compare height arrays), foliage reappears in same spots.
+**Check:** save after edits is small (seed + age + params + deltas), reload matches exactly (compare height arrays), foliage reappears in same spots.
 
-### Phase 3 completion gate
-- Seeded terrain, deterministic; brush edits rebuild dirty chunks only.
-- Camera streaming with no main-thread stalls; memory flat.
+### Phase 4 completion gate
+- Chunks stream from worldgen data, deterministic, seam-free, < 1 ms each.
+- Brush edits rebuild dirty chunks only; camera streaming with no main-thread stalls; memory flat.
 - Foliage rendered from sim data; save = seed+deltas round-trips exactly.
 
 ---
 
-# PHASE 4 — Deferred systems (concept mastery)
+# PHASE 5 — Deferred systems (concept mastery)
 
-These come AFTER the foundation (AGENTS: "do not add gameplay systems before Phases 0–3"). Learn the concepts; do NOT implement yet.
+These come AFTER the foundation (AGENTS: "do not add gameplay systems before Phases 0–4"). Learn the concepts; do NOT implement yet.
 
-## 4.1 Macro world generation
-- Concepts: tile/hex grids, Voronoi regions (biomes/provinces), seeded continent noise, river flow simulation (downhill accumulation), climate from latitude+noise, border/adjacency graphs.
-- Repo link: none yet; study as pure C++ data (few MB for whole world — the macro layer is cheap by design).
-- Mastery check: generate a 10k×10k-tile world in < 1 s headless; same seed → identical map; province graph connectivity correct.
+## 5.1 Macro layer on top of worldgen data
+- Concepts: the coarse world from Phase 3 IS the macro map — provinces drawn from biome + plate-boundary data (plate ID = province parent, boundaries = borders), river cells, elevation-constrained regions; adjacency graph over the coarse grid; factions seed on continent/plate clusters; trade routes follow land/ocean adjacency.
+- Mastery check: province graph over a generated world builds in < 1 s headless; borders follow geographic features (rivers/mountains), not noise.
 
-## 4.2 Procedural buildings (path → wall → masonry → roof)
+## 5.2 Procedural buildings (path → wall → masonry → roof)
 - Concepts: footprint outline → wall segments → masonry (window/door placement rules, pattern grammar) → roof (gable/hipped via edge classification); L-systems as an optional alternative; building = graph, not mesh art.
 - Mastery check: a one-line footprint in → valid building mesh out, every time; roof slopes drain water (no inverted faces).
 
-## 4.3 Vic3-style economy
+## 5.3 Vic3-style economy
 - Concepts: aggregated pop groups per province (NOT individuals); goods + market pools; supply/demand → price via clearance; dirty-flag recomputation (only touched markets tick); trade routes between markets; feedback loops + stability (why laissez-faire vs price caps oscillate).
 - Mastery check: explain the dirty-flag model on paper; simulate 100 markets with 95% idle per tick and verify tick cost scales with dirty count, not market count.
 
-## 4.4 4X layer
+## 5.4 4X layer
 - Concepts: turn-based event loop on top of the 1 Hz tick; factions/AI personality budgets (spend per turn, not per frame); diplomacy matrices; fog-of-war & territory graphs; trade route edges = the macro↔zone bridge.
 - Mastery check: 32 factions ticking in < 1 ms total; no faction iterates every frame.
 
-## 4.5 Kenshi local sim (staggered AI + hierarchical pathfinding)
+## 5.5 Kenshi local sim (staggered AI + hierarchical pathfinding)
 - Concepts: staggered AI — each agent thinks 1–4 Hz on a round-robin/offset schedule, not every frame; utility AI (needs + context → score actions); hierarchical pathfinding (region graph first, then local grid within region); avoidance vs pathfinding separation (local steering, global graph); combat as job-graph (pairs/triples, not O(n²) collisions).
 - Mastery check: 1000 agents, 20 Hz movement, 2 Hz decisions, bounded per-tick budget; pathing a cross-world route takes ms, not seconds.
 
-## 4.6 UI
+## 5.6 UI
 - Concepts: Godot UI off the sim thread (UI reads snapshots only); event-driven refresh (dirty flags) not per-frame redraw; list virtualization for long lists; UI must never call into sim functions directly.
 - Mastery check: opening a 1000-row market list is instant and stays stable at 60 fps while sim runs.
 
-## 4.7 SIMD / polish pass
+## 5.7 SIMD / polish pass
 - Concepts: SIMD (SSE/AVX/NEON) via intrinsics or `std::simd`-style libraries; auto-vectorization (why SoA matters — loop vectorizes when arrays are flat); profiling-guided optimization: Tracy first, SIMD only where hot (the 20% that takes 80% of time).
 - Mastery check: hot loops vectorize (check compiler report `-Rpass=loop-vectorize`); 2–4× speedup on identified hot spots, measured, not assumed.
 
@@ -353,7 +479,10 @@ These come AFTER the foundation (AGENTS: "do not add gameplay systems before Pha
 
 # Cross-phase principles (revisit every phase)
 1. **Determinism:** same seed + same inputs → same world. Nothing breaks this (fixed iteration order, fixed point where needed).
-2. **Sim ≠ Godot:** sim owns data in SoA; Godot owns pixels. The boundary is snapshots and dirty flags only.
-3. **Dirty-flag everything:** idle work must cost ~nothing. If it ticks every frame, it's wrong by design.
-4. **Bench before beauty:** every phase has a `bench/` proof. If it isn't measurable, it isn't done.
-5. **Potato budget:** frame ≤ 16.6 ms, sim tick ≤ 2 ms, empty world < 1 ms, memory < ~512 MB. Re-verify each phase.
+2. **The world is generated once, then frozen.** Drift runs at world creation only (`age` param); geography never changes at runtime — saves stay seed+deltas, the map stays stable for gameplay.
+3. **The world is seamless:** a flat map with horizontal wrap-around (X = longitude, modulo width) — no hard edges anywhere; Y = latitude with poles at top/bottom. Never a sphere, never vertical wrap.
+4. **Sim ≠ Godot:** sim owns data in SoA; Godot owns pixels. The boundary is snapshots and dirty flags only.
+5. **Realism is verified headless:** every worldgen stage has a PPM dump — eyeball it in an image viewer BEFORE touching Godot.
+6. **Dirty-flag everything:** idle work must cost ~nothing. If it ticks every frame, it's wrong by design.
+7. **Bench before beauty:** every phase has a `bench/` proof. If it isn't measurable, it isn't done.
+8. **Potato budget:** frame ≤ 16.6 ms, sim tick ≤ 2 ms, empty world < 1 ms, memory < ~512 MB, whole world gen < 1–2 s. Re-verify each phase.

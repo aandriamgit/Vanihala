@@ -92,6 +92,7 @@ var pipeline: RID
 var _shader_copy: RID
 var _pipe_copy: RID
 var _intermediate: RID
+var _intermediate_b: RID
 
 var mutex: Mutex = Mutex.new()
 var _last_size: Vector2i = Vector2i()
@@ -141,9 +142,11 @@ func _render_callback(
 	if size.x == 0 or size.y == 0:
 		return
 
-	if size != _last_size or not _intermediate.is_valid():
+	if size != _last_size or not _intermediate.is_valid() or not _intermediate_b.is_valid():
 		if _intermediate.is_valid():
 			rd.free_rid(_intermediate)
+		if _intermediate_b.is_valid():
+			rd.free_rid(_intermediate_b)
 		var fmt := RDTextureFormat.new()
 		fmt.format = RenderingDevice.DATA_FORMAT_R16G16B16A16_SFLOAT
 		fmt.width = size.x
@@ -155,6 +158,7 @@ func _render_callback(
 			RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
 		)
 		_intermediate = rd.texture_create(fmt, RDTextureView.new())
+		_intermediate_b = rd.texture_create(fmt, RDTextureView.new())
 		_last_size = size
 
 	mutex.lock()
@@ -170,10 +174,16 @@ func _render_callback(
 	var _st: float = strength
 	mutex.unlock()
 
-	var push_constant: PackedFloat32Array = PackedFloat32Array([
+	var push_h: PackedFloat32Array = PackedFloat32Array([
 		_fc, _fw, _ba, _si,
 		_sb, _an, _sh, _hb,
-		_ht, _st, 0.0, 0.0,
+		_ht, _st, 1.0, 0.0,
+		0.0, 0.0, 0.0, 0.0,
+	])
+	var push_v: PackedFloat32Array = PackedFloat32Array([
+		_fc, _fw, _ba, _si,
+		_sb, _an, _sh, _hb,
+		_ht, _st, 0.0, 1.0,
 		0.0, 0.0, 0.0, 0.0,
 	])
 
@@ -184,7 +194,7 @@ func _render_callback(
 		var color_image: RID = render_scene_buffers.get_color_layer(view)
 		if not color_image.is_valid() or not _intermediate.is_valid():
 			continue
-
+	
 		if _pipe_copy.is_valid():
 			var u_cp_src: RDUniform = RDUniform.new()
 			u_cp_src.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
@@ -205,26 +215,45 @@ func _render_callback(
 			rd.compute_list_dispatch(cl_copy, x_groups, y_groups, 1)
 			rd.compute_list_end()
 
-		var u_src: RDUniform = RDUniform.new()
-		u_src.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-		u_src.binding = 0
-		u_src.add_id(_intermediate)
-		var set_src: RID = UniformSetCacheRD.get_cache(shader, 0, [u_src])
+		var u_src_h: RDUniform = RDUniform.new()
+		u_src_h.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+		u_src_h.binding = 0
+		u_src_h.add_id(_intermediate)
+		var set_src_h: RID = UniformSetCacheRD.get_cache(shader, 0, [u_src_h])
 
-		var u_dst: RDUniform = RDUniform.new()
-		u_dst.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-		u_dst.binding = 0
-		u_dst.add_id(color_image)
-		var set_dst: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst])
+		var u_dst_h: RDUniform = RDUniform.new()
+		u_dst_h.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+		u_dst_h.binding = 0
+		u_dst_h.add_id(_intermediate_b)
+		var set_dst_h: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst_h])
 
-		var compute_list: int = rd.compute_list_begin()
-		rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
-		rd.compute_list_bind_uniform_set(compute_list, set_src, 0)
-		rd.compute_list_bind_uniform_set(compute_list, set_dst, 1)
-		rd.compute_list_set_push_constant(compute_list, push_constant.to_byte_array(), 64)
-		rd.compute_list_dispatch(compute_list, x_groups, y_groups, 1)
+		var cl_h: int = rd.compute_list_begin()
+		rd.compute_list_bind_compute_pipeline(cl_h, pipeline)
+		rd.compute_list_bind_uniform_set(cl_h, set_src_h, 0)
+		rd.compute_list_bind_uniform_set(cl_h, set_dst_h, 1)
+		rd.compute_list_set_push_constant(cl_h, push_h.to_byte_array(), 64)
+		rd.compute_list_dispatch(cl_h, x_groups, y_groups, 1)
 		rd.compute_list_end()
 
+		var u_src_v: RDUniform = RDUniform.new()
+		u_src_v.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+		u_src_v.binding = 0
+		u_src_v.add_id(_intermediate_b)
+		var set_src_v: RID = UniformSetCacheRD.get_cache(shader, 0, [u_src_v])
+
+		var u_dst_v: RDUniform = RDUniform.new()
+		u_dst_v.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+		u_dst_v.binding = 0
+		u_dst_v.add_id(color_image)
+		var set_dst_v: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst_v])
+
+		var cl_v: int = rd.compute_list_begin()
+		rd.compute_list_bind_compute_pipeline(cl_v, pipeline)
+		rd.compute_list_bind_uniform_set(cl_v, set_src_v, 0)
+		rd.compute_list_bind_uniform_set(cl_v, set_dst_v, 1)
+		rd.compute_list_set_push_constant(cl_v, push_v.to_byte_array(), 64)
+		rd.compute_list_dispatch(cl_v, x_groups, y_groups, 1)
+		rd.compute_list_end()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -249,3 +278,6 @@ func _cleanup() -> void:
 	if _intermediate.is_valid():
 		rd.free_rid(_intermediate)
 		_intermediate = RID()
+	if _intermediate_b.is_valid():
+		rd.free_rid(_intermediate_b)
+		_intermediate_b = RID()
