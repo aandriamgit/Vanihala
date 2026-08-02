@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://dlm27kuuxtxre" path="res://scenes/levels/halloween_haunted_house.glb" id="1_5xla7"]
 [ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="2_odewy"]
 [ext_resource type="Script" uid="uid://bv4uhcxb2ecu" path="res://addons/compositor_effects/tilt_shift/post_process_tilt_shift.gd" id="3_pm8i0"]
-[ext_resource type="Material" uid="uid://cli52w83m7ui1" path="res://assets/materials/glade_pastel.material" id="4_luusr"]
+[ext_resource type="Material" uid="uid://cli52w83m7ui1" path="res://assets/materials/glade_pastel.tres" id="4_luusr"]
 
 [sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_pm8i0"]
 energy_multiplier = 3.0

@@ -2,9 +2,9 @@
 
 [sub_resource type="Gradient" id="Gradient_wju3j"]
 offsets = PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8, 1)
-colors = PackedColorArray(0.43137255, 0.4627451, 0.62352943, 1, 0.6627451, 0.7137255, 0.8117647, 1, 0.8117647, 0.84705883, 0.78039217, 1, 0.9098039, 0.8862745, 0.8117647, 1, 0.96862745, 0.972549, 0.9490196, 1, 1, 1, 1, 1)
+colors = PackedColorArray(0.58, 0.62, 0.78, 1, 0.6627451, 0.7137255, 0.8117647, 1, 0.8117647, 0.84705883, 0.78039217, 1, 0.9098039, 0.8862745, 0.8117647, 1, 0.96862745, 0.972549, 0.9490196, 1, 1, 1, 1, 1)
 metadata/_snap_enabled = true
-metadata/_snap_count = 5
+metadata/_snap_count = 4
 
 [resource]
 gradient = SubResource("Gradient_wju3j")
