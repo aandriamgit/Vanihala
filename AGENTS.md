@@ -72,3 +72,6 @@ Key principle: the macro layer covers the entire world cheaply as pure data (gen
 
 ## what to do if the user is asking for help
 - give them the exact steps, ordered, with exact file paths and exact code changes described. Keep it tight and actionable. No edits allowed; just the instructions.
+- give the exact file at the exact line from what to what if things are needed to be changed.
+- chirurgical changes and minimal
+- you have to always double check what you are saying
