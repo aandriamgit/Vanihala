@@ -4,6 +4,28 @@
 [ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="2_odewy"]
 [ext_resource type="Script" uid="uid://bv4uhcxb2ecu" path="res://addons/compositor_effects/tilt_shift/post_process_tilt_shift.gd" id="3_pm8i0"]
 
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_pm8i0"]
+energy_multiplier = 3.0
+
+[sub_resource type="Sky" id="Sky_luusr"]
+sky_material = SubResource("PhysicalSkyMaterial_pm8i0")
+
+[sub_resource type="Environment" id="Environment_y2046"]
+background_mode = 2
+sky = SubResource("Sky_luusr")
+tonemap_mode = 3
+tonemap_white = 6.0
+ssao_enabled = true
+glow_enabled = true
+glow_normalized = true
+glow_intensity = 0.08
+glow_hdr_threshold = 2.0
+fog_enabled = true
+fog_density = 0.0035
+fog_aerial_perspective = 1.0
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_kwdo1"]
+
 [sub_resource type="CompositorEffect" id="CompositorEffect_luusr"]
 resource_local_to_scene = false
 resource_name = ""
@@ -12,15 +34,28 @@ effect_callback_type = 4
 needs_motion_vectors = false
 needs_normal_roughness = false
 script = ExtResource("3_pm8i0")
-focus_width = 0.37
-blur_amount = 4.0
-strength = 0.5
 metadata/_custom_type_script = "uid://bv4uhcxb2ecu"
 
 [sub_resource type="Compositor" id="Compositor_y2046"]
 compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_luusr")])
 
 [node name="Node3D" type="Node3D" unique_id=747140488]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1979200319]
+environment = SubResource("Environment_y2046")
+camera_attributes = SubResource("CameraAttributesPractical_kwdo1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1979113203]
+transform = Transform3D(0.190809, -0.22582306, 0.9552988, 0, 0.97317886, 0.23004973, -0.98162717, -0.043895558, 0.18569128, 0, 0, 0)
+light_temperature = 3000.0
+light_color = Color(0.93333334, 0.83137256, 0.62352943, 1)
+light_energy = 5.0
+shadow_enabled = true
+directional_shadow_split_1 = 0.04
+directional_shadow_split_2 = 0.11
+directional_shadow_split_3 = 0.33
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 200.0
 
 [node name="Sketchfab_Scene" parent="." unique_id=2121166809 instance=ExtResource("1_5xla7")]
 transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, -0.50364745, -1.1920929e-07, -1.2156119)
