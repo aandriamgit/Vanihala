@@ -1,31 +1,9 @@
 [gd_scene format=3 uid="uid://dreyuflj2m6yf"]
 
-[ext_resource type="PackedScene" uid="uid://dlm27kuuxtxre" path="res://scenes/levels/halloween_haunted_house.glb" id="1_5xla7"]
 [ext_resource type="PackedScene" uid="uid://cf7brgwaxlmud" path="res://addons/3d_rts_camera/rtscam.tscn" id="2_odewy"]
 [ext_resource type="Script" uid="uid://bv4uhcxb2ecu" path="res://addons/compositor_effects/tilt_shift/post_process_tilt_shift.gd" id="3_pm8i0"]
 [ext_resource type="Material" uid="uid://cli52w83m7ui1" path="res://assets/materials/glade_pastel.tres" id="4_luusr"]
-
-[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_pm8i0"]
-energy_multiplier = 3.0
-
-[sub_resource type="Sky" id="Sky_luusr"]
-sky_material = SubResource("PhysicalSkyMaterial_pm8i0")
-
-[sub_resource type="Environment" id="Environment_y2046"]
-background_mode = 2
-sky = SubResource("Sky_luusr")
-tonemap_mode = 3
-tonemap_white = 6.0
-ssao_enabled = true
-glow_enabled = true
-glow_normalized = true
-glow_intensity = 0.08
-glow_hdr_threshold = 2.0
-fog_enabled = true
-fog_density = 0.0035
-fog_aerial_perspective = 1.0
-
-[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_kwdo1"]
+[ext_resource type="PackedScene" uid="uid://7t5vhgwo6vt8" path="res://scenes/levels/test/main.tscn" id="4_y2046"]
 
 [sub_resource type="CompositorEffect" id="CompositorEffect_luusr"]
 resource_local_to_scene = false
@@ -40,34 +18,35 @@ metadata/_custom_type_script = "uid://bv4uhcxb2ecu"
 [sub_resource type="Compositor" id="Compositor_y2046"]
 compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_luusr")])
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_luusr"]
+[sub_resource type="SphereMesh" id="SphereMesh_luusr"]
 material = ExtResource("4_luusr")
 
+[sub_resource type="Environment" id="Environment_luusr"]
+background_mode = 2
+glow_enabled = true
+glow_normalized = true
+glow_bloom = 0.1
+
 [node name="Node3D" type="Node3D" unique_id=747140488]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1979200319]
-environment = SubResource("Environment_y2046")
-camera_attributes = SubResource("CameraAttributesPractical_kwdo1")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1979113203]
-transform = Transform3D(0.19080892, -0.24246094, 0.9512121, 0, 0.9690157, 0.246999, -0.9816271, -0.04712962, 0.18489684, 0, 0, 0)
-light_color = Color(0.93333334, 0.83137256, 0.62352943, 1)
-light_energy = 5.0
-shadow_enabled = true
-directional_shadow_split_1 = 0.04
-directional_shadow_split_2 = 0.11
-directional_shadow_split_3 = 0.33
-directional_shadow_blend_splits = true
-directional_shadow_max_distance = 200.0
-
-[node name="Sketchfab_Scene" parent="." unique_id=2121166809 instance=ExtResource("1_5xla7")]
-transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, -0.50364745, -1.1920929e-07, -1.2156119)
 
 [node name="RTScamera" parent="." unique_id=680522844 instance=ExtResource("2_odewy")]
 compositor = SubResource("Compositor_y2046")
 projection = 1
 size = 25.0
+near = 0.1
+far = 80.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2146224706]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.12444, 3.0285192)
-mesh = SubResource("CylinderMesh_luusr")
+mesh = SubResource("SphereMesh_luusr")
+
+[node name="Main" parent="." unique_id=1968846408 instance=ExtResource("4_y2046")]
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1495381116]
+directional_shadow_max_distance = 50.0
+transform = Transform3D(0.7071068, 0.5, -0.5, 0, 0.7071068, 0.7071068, 0.7071068, -0.5, 0.5, 0, -1, 0)
+shadow_enabled = true
+directional_shadow_mode = 0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2044714055]
+environment = SubResource("Environment_luusr")
