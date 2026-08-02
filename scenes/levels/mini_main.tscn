@@ -40,7 +40,7 @@ metadata/_custom_type_script = "uid://bv4uhcxb2ecu"
 [sub_resource type="Compositor" id="Compositor_y2046"]
 compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_luusr")])
 
-[sub_resource type="SphereMesh" id="SphereMesh_y2046"]
+[sub_resource type="CylinderMesh" id="CylinderMesh_luusr"]
 material = ExtResource("4_luusr")
 
 [node name="Node3D" type="Node3D" unique_id=747140488]
@@ -50,8 +50,7 @@ environment = SubResource("Environment_y2046")
 camera_attributes = SubResource("CameraAttributesPractical_kwdo1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1979113203]
-transform = Transform3D(0.190809, -0.22582306, 0.9552988, 0, 0.97317886, 0.23004973, -0.98162717, -0.043895558, 0.18569128, 0, 0, 0)
-light_temperature = 3000.0
+transform = Transform3D(0.19080892, -0.24246094, 0.9512121, 0, 0.9690157, 0.246999, -0.9816271, -0.04712962, 0.18489684, 0, 0, 0)
 light_color = Color(0.93333334, 0.83137256, 0.62352943, 1)
 light_energy = 5.0
 shadow_enabled = true
@@ -71,4 +70,4 @@ size = 25.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2146224706]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.12444, 3.0285192)
-mesh = SubResource("SphereMesh_y2046")
+mesh = SubResource("CylinderMesh_luusr")
