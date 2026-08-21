@@ -2,149 +2,142 @@
 
 Goal: learn each concept **by doing**, on the actual repo, with a measurable acceptance test per exercise.
 Convention: every exercise ends with a **check** — a concrete thing you can observe/measure.
-
 Recommended pacing: 1 concept cluster per day, 3–5 days per phase, revisit any failed check before moving on.
 
 ---
 
-# PHASE 1 — Settle the 2.5D Tiny Glade render
+# PHASE 1 — NPR/Painterly rendering foundation
 
-Target: ortho diorama camera, soft pastel materials, tight shadow, cheap foliage, minimal post stack.
-Related files: `addons/3d_rts_camera/`, `assets/shaders/spatial/`, `assets/shaders/shaderincs/`, `addons/compositor_effects/`, `scenes/levels/mini_main.tscn`.
+Target: ramp shading, object-space grain, edge bleeding, limited palette, silhouette-driven forms. Build the visual language first; everything else renders through it.
+Related files: `assets/shaders/`, `addons/compositor_effects/`, `scenes/levels/mini_main.tscn`.
 
-## 1.1 Orthographic camera (adapt the RTS rig)
-
-### Concepts to master
-- Ortho vs perspective projection: why zoom = change `size` (ortho height) instead of FOV, and why ortho = the "miniature" flat look.
-- Camera basis vectors: `transform.basis` axes; rotating around a pivot point (orbit center) instead of around the camera itself.
-- Inverse transform / ray-plane intersection: turning a screen pixel into a point on the Y=0 ground plane (RTS panning).
-- Exponential smoothing (`lerp(value, target, 1 - exp(-k*delta))` vs `lerp(value, target, k*delta)`) — delta-independent, this is what makes the current rig feel stable.
-- Input mapping: `Input.is_action_pressed`, mouse position edge scrolling, mouse-motion deltas for yaw/pitch.
-
-### Repo references
-- `addons/3d_rts_camera/3d_rts_camera.gd` — the orbit rig to modify (yaw/pitch/orbit_center, lines 23–80).
-- `addons/3d_rts_camera/rtscam.tscn` — node setup.
-
-### Exercises
-1. Switch the rig to orthographic (`projection = Camera3D.PROJECTION_ORTHOGONAL`), make zoom change `size` rather than `orbit_distance`.
-2. Add ground-ray panning: on MMB-drag, cast a ray from screen to Y=0 plane and move `orbit_center` by the plane delta (not by camera-relative velocity).
-3. Add pitch/yaw clamping so the camera stays in the diorama "sweet spot" (pitch ≈ 35–60°, yaw any).
-
-**Check:** panning by dragging on the terrain never "slides" faster when zoomed in (it's world-space-locked); the scene stays flat (no perspective convergence on tall buildings).
-
-## 1.2 Soft pastel material (ramp lighting)
+## 1.1 Ramp shading (NdotL → gradient LUT)
 
 ### Concepts to master
-- Lambert NdotL: `max(dot(NORMAL, LIGHT), 0)` — the base of every toon shader.
-- Ramp lookup: sampling a 1D texture along NdotL (`texture(cel_ramp, vec2(ndotl, 0.5))`) instead of hardcoding if/else bands — the existing `cel_shader.gdshaderinc` already does this.
-- Ramp design for pastel: soft gradient = smooth transitions (many stops, low contrast, high value / low saturation), vs hard cel = few sharp bands. Pastel is a **ramp art asset**, not a shader tweak.
-- `light_wrap` / wrap lighting: shifting NdotL so the dark side of a sphere gets some light — this is THE pastel trick.
-- Ambient/indirect: `ambient_light_disabled` + Environment ambient color; pastel needs a bright ambient so shadows stay soft blue-ish, not black.
-- Specular kill: `specular_disabled` / near-zero `specular_strength` — pastel has no harsh highlights.
-- Dithering vs banding: when ramps have few steps you get banding; the `use_dither` Bayer pattern in the inc file is the fix.
+- **Ramp shading / Toon ramp / Gradient ramp shader** — replace continuous PBR falloff with a 1D gradient LUT sampled by NdotL.
+- **NdotL** — `max(dot(NORMAL, LIGHT), 0)` — the value fed into the ramp. Core term for every ramp shader reference.
+- **Lookup texture (LUT)** — the gradient image used as the ramp (1D or 2D, typically 256×1 or 16×1). Distinct from color-grading LUT but same underlying concept.
+- **Half-Lambert** — softens the lit/unlit terminator before ramp sampling; smoother transition than raw Lambert, often used as ramp input for painterly looks.
+- **Complementary shadow color** — tint shadows toward cool/complementary hues instead of just darkening; standard painting theory applied to shading.
+- **Dynamic time-of-day** — the ramp must read correctly as sun direction/color changes (sunrise, noon, sunset, night); not baked for one light setup.
 
 ### Repo references
 - `assets/shaders/spatial/cel_shader.gdshader` — the main shader (already wired to the inc).
-- `assets/shaders/shaderincs/cel_shader.gdshaderinc` — `toon_light()`, ramp uniforms, `light_wrap`, `steepness`, `shadow_strength`, dither.
-- `assets/shaders/shaderincs/foliage_cel_shader.gdshaderinc` — the foliage variant.
+- `assets/shaders/shaderincs/cel_shader.gdshaderinc` — `toon_light()`, ramp uniforms, `light_wrap`, `steepness`, `shadow_strength`.
 
 ### Exercises
-1. Make a 16×1 pastel ramp texture (3–4 soft transitions, pastel palette) and assign it to `cel_ramp`. Create a second "hard cel" ramp and swap between them live.
-2. Tune `light_wrap` + `shadow_strength` until a sphere under your directional light keeps a lit side and a soft-blue shadow side — no pure black.
-3. Turn on dithering (`use_dither`) and see it kill banding on the dark side; understand the cost/benefit.
+1. Create a 16×1 gradient ramp texture (soft stops, pastel palette) and assign it to `cel_ramp`. Swap between a soft ramp and a hard 2–3 band ramp to see the difference.
+2. Tune `light_wrap` + `shadow_strength` until a sphere under a directional light keeps a lit side and a soft-blue shadow side — no pure black.
+3. Test under a rotating directional light: the ramp must read correctly at sunrise, noon, sunset angles. Adjust if bands shift or break.
 
-**Check:** rotating the light never produces a visible hard "cut" line on a smooth mesh; nothing renders pure black.
+**Check:** rotating the light never produces a visible hard "cut" line on a smooth mesh; no pure black anywhere; the ramp adapts to time-of-day changes.
 
-## 1.3 Single tight 2048 directional cascade
+## 1.2 Object-space grain (paint texture on geometry)
 
 ### Concepts to master
-- Shadow mapping: depth rendered from the light's viewpoint, then depth-compared in light space in the material's `light()` / shadow stage.
-- Cascade & frustum fit: the shadow camera (ortho) must tightly bound the visible frustum — "tight" = max texel density. Godot's `directional_shadow_max_distance` + `directional_shadow_size` (2048).
-- Stabilization: snapping the shadow camera to texel-size increments so shadows don't shimmer while the camera moves.
-- Bias: `directional_shadow_normal_bias` / polygon bias — kills acne (near face self-shadowing) and peter-panning.
-- Why ONE cascade here: ortho + small diorama = the frustum is small, so a single tight 2048 cascade beats 4 loose ones. Blended cascades are a different concept you don't need yet.
+- **Object-space shading / Object-space texturing** — effects computed in the object's coordinate system, not screen-space.
+- **Triplanar mapping** — projects grain from three axes onto arbitrary geometry without UVs; the practical path for procedural meshes.
+- **World-space noise / 3D noise texture** — grain from a noise function sampled at world/object position, stays "attached" to the surface.
+- **Temporal stability / Temporal aliasing** — grain must not flicker/swim/shimmer as camera moves; the key integration challenge.
+- **Mipmapping** — reduces aliasing/shimmer on fine grain at distance; critical for LOD stability.
+- **Procedural noise functions** — Perlin, Simplex, Worley/Voronoi: the math behind organic-looking grain.
+- **Texture tiling / seamless tiling** — grain texture must not show visible repetition across large procedural surfaces.
+- **Stochastic texturing** — techniques to break up tiling patterns on repeated procedural terrain.
 
 ### Repo references
-- Environment / `DirectionalLight3D` in `scenes/levels/mini_main.tscn`.
-- The shadow uniforms already exposed in `cel_shader.gdshaderinc` (`shadow_strength`).
+- `addons/compositor_effects/` — the post-process framework (grain may live as a compositor effect or per-material).
+- Any existing shader with triplanar or noise sampling patterns.
 
 ### Exercises
-1. Set `directional_shadow_size = 2048`, split = 4 (single cascade), max distance tight to your diorama extents (~60 m).
-2. Walk the camera; add stabilization by toggling `DirectionalLight3D` shadow modes if available (else snap the shadow ortho size to a multiple of texel size in code) until shimmer disappears.
-3. Reduce `directional_shadow_max_distance` until the shadow *just* covers the visible scene — observe texel density improve.
+1. Implement a grain overlay using triplanar mapping on a test sphere. Sample a 3D noise texture at object position. Observe it stays attached as the camera orbits.
+2. Add mipmapping to the grain texture. Compare at distance: with mipmaps, grain stabilizes; without, it shimmers.
+3. Test temporal stability: walk the camera around the scene. Grain must not swim, flicker, or pop. If it does, add temporal damping (blend with previous frame's grain sample).
+4. Test tiling: use a large procedural surface. If grain repeats visibly, apply stochastic offset or a second noise layer to break the pattern.
 
-**Check:** no shadow acne on grass ground, no shimmer when panning, shadow edges are soft-but-defineable at 2048 (they should NOT be blurry mush from an oversized max distance).
+**Check:** grain stays "painted on" the surface as camera moves; no shimmer at distance; no visible tiling repetition on large surfaces.
 
-## 1.4 Foliage MultiMesh billboards
+## 1.3 Edge bleeding / watercolor edges
 
 ### Concepts to master
-- MultiMesh: thousands of instances in ONE draw call; `MultiMeshInstance3D` + `transform_array` buffers; why this is the potato-hardware path (vs thousands of MeshInstance3D nodes).
-- Billboarding: in the vertex shader, zero out the camera-rotation part of the instance transform (`INV_VIEW_MATRIX` basis) so quads always face the camera.
-- Alpha scissor: discarding fragments with `discard` / alpha test so leaf shapes come from a texture without transparency sorting problems.
-- Vertex-shader wind: sway by object-space or view-space sine with a world-position seed; `view_space_sway` in your shader is this technique.
-- Quantization: snapping the sway to discrete steps ("puppet" look) — already implemented (`quantised`, `framerate`).
-- Atlas variation: sampling `base_texture` + variation offsets per instance (your `var1_probability` etc.).
-- Sorting: scissored quads sort by depth normally; blended quads don't — that's why you scissor.
+- **Edge detection** — Sobel, Roberts cross, depth/normal-based: find silhouettes and internal edges in 3D.
+- **Depth-based / Normal-based edge detection** — use G-buffer data for reliable 3D edges (not color contrast alone).
+- **Screen-space post-processing** — the category; applied to the rendered image, not per-object.
+- **Domain warping / Noise-based UV distortion** — distort the sample position with a noise field to create bleeding/wobbling on edges.
+- **Turbulence function** — layered Perlin noise used for organic distortion; common in watercolor-shader tutorials.
+- **Alpha bleeding / Pigment diffusion** — advanced fluid simulation of watercolor pigment on wet paper; the "high-end" version.
 
 ### Repo references
-- `assets/shaders/spatial/foliage_cel_shader.gdshader` — full billboard+wind+variation implementation to study line by line.
-- `assets/shaders/shaderincs/foliage_cel_shader.gdshaderinc`.
+- `assets/shaders/spatial/outlines.gdshader` — existing edge detection shader.
+- `addons/compositor_effects/` — post-process framework for screen-space edge passes.
 
 ### Exercises
-1. Write a GDScript `_ready()` that fills a MultiMesh with ~5000 grass quads (pseudo-random positions, per-instance scale/rotation/variation) — see it render as ~1 draw call (tune view `RendererDebugDrawCalls` or the profiler).
-2. Remove the billboard lines from the vertex shader; re-add them by reasoning about `INV_VIEW_MATRIX` (don't look at the inc).
-3. Change `view_space_sway` vs object-space sway and observe which looks stable at screen edges.
+1. Read the existing `outlines.gdshader`. Identify how it detects edges (depth-based? normal-based? color-based?). Document which method it uses.
+2. Implement a post-process edge pass using depth+normal detection. Verify it works on procedurally generated meshes without clean UVs.
+3. Apply domain warping to the edge detection: distort the UV sample with a turbulence function. The hard edge lines should become soft and "bleeding."
+4. Tune the warp strength: too little = still hard; too much = edges dissolve. Find the watercolor sweet spot.
 
-**Check:** 5000 instances = 1 draw call; no "billboard planes from the side" artifacts; wind is stable across chunk boundaries (seed from world position, not instance index).
+**Check:** edges are soft and organic (not pixel-perfect clean lines); the effect works on meshes with no UVs; toggling the effect changes only visual quality, never performance below budget.
 
-## 1.5 Default post stack (compositor_effects)
+## 1.4 Limited / consistent color palette
 
 ### Concepts to master
-- Godot 4.6 post pipeline: `CompositorEffect` (script) + compute shader (.glsl) with `Read / Storage` buffer usage; how the addon's `post_process_*.gd` + `*.glsl` pairs work.
-- Reading render buffers: screen color texture, depth texture; linear depth reconstruction (`1.0 / (z * far - ...)`) — needed by tilt-shift too.
-- Cost model: full-screen ops are ~0.1–0.5 ms at low internal res; blur/DoF/glare are multi-pass and expensive. Vignette ≈ free, color grade ≈ free, DoF/bloom = expensive.
-- Stack order matters: grade → vignette → grain; order changes the result.
-- Default stack discipline: default = color grade + vignette ONLY; everything else behind a toggle.
-- Upscaling concept (from AGENTS): render at 960×540/1280×720 internally, upscale to 1080p (FSR) — post cost scales with internal res, which is why the cheap stack matters.
+- **Color grading** — real-time post-process (usually 3D LUT) remapping all colors toward a target palette.
+- **3D LUT (Look-Up Table)** — cube lookup that maps input RGB → graded output RGB; the direct answer to enforcing a limited palette across a generated world.
+- **Palette quantization / Color quantization** — reduce distinct colors in the final image; more aggressive than grading alone.
+- **Posterization** — reduce continuous gradients to discrete bands; related to palette limiting and ramp shading.
+- **Material authoring constraints** — constrain what colors procedural systems may assign upstream of any shader.
 
 ### Repo references
-- `addons/compositor_effects/color_correction/`, `.../vignette/` — read these two pairs first; they're your default stack.
-- `addons/compositor_effects/depth_of_field/`, `.../tilt_shift/`, `.../unreal_bloom/`, `.../glare/` — the expensive toggles.
+- `addons/compositor_effects/color_correction/` — existing color grading post-process.
 
 ### Exercises
-1. Read `post_process_color_correction.gd` + `.glsl` end to end; explain in your own words how the CompositorEffect gets the scene color and writes it back.
-2. Build a WorldEnvironment with ONLY color grade + vignette enabled in the compositor. Verify in the editor profiler that GPU cost stays < ~0.3 ms at 1280×720 internal.
-3. Enable tilt-shift and bloom; watch cost climb; understand why the default excludes them.
+1. Read `post_process_color_correction.gd` + `.glsl`. Understand how the CompositorEffect reads scene color and writes graded output via a 3D LUT.
+2. Build a 3D LUT that maps the full color space into a limited pastel palette (5–8 dominant hues). Apply it. The entire scene should feel "painted."
+3. Test with procedural content: generate terrain with various biome colors. The LUT must unify them into the palette without making everything identical.
+4. Optionally combine with quantization: reduce the graded output to N discrete color bands. Compare posterized vs non-posterized.
 
-**Check:** with only grade+vignette, total GPU post cost is under ~0.5 ms at low internal res; toggling effects on/off changes cost predictably.
+**Check:** the palette is consistent across the entire scene regardless of material source; no single object "breaks" the palette; the LUT is cheap (verify GPU cost < 0.1 ms at 1280×720).
 
-## 1.6 Tilt-shift (optional toggle)
+## 1.5 Simplified forms / composition
 
 ### Concepts to master
-- Circle of confusion (CoC): blur radius as a function of depth distance from the focus plane — the core math of any DoF.
-- Reading depth: reconstruct linear distance in the post shader from the depth buffer.
-- Blur band shape: near band (above focus) and far band (below focus) with smoothstep falloff — tilt-shift = fake "macrolens" via steep blur bands at top/bottom of frame.
-- Separable blur: two 1D passes (H then V) instead of one 2D kernel — the difference between cheap and expensive DoF.
-- Toggle pattern: effect on/off + strength via exported uniforms on the CompositorEffect script.
-
-### Repo references
-- `addons/compositor_effects/tilt_shift/post_process_tilt_shift.gd` + `tilt_shift.glsl`.
-- `addons/compositor_effects/depth_of_field/` — full DoF version, more expensive, same family of concepts.
+- **Silhouette readability** — shape identifiability from outline alone; core constraint for stylized art direction.
+- **Procedural modeling constraints / Shape grammar** — rule systems constraining procedural architecture/terrain to specific silhouette/complexity rules.
+- **LOD (Level of Detail)** — detail culling at distance to keep compositions clean, not just for performance.
+- **Detail density budget** — limit distinct visual elements/objects on screen; art-direction lever in open worlds.
+- **Low-poly stylization** — simplified geometry + flat/near-flat shading, commonly paired with NPR shaders.
 
 ### Exercises
-1. Read the tilt-shift glsl; identify: depth read, CoC computation, blur bands, blur pass.
-2. Tune bands until the diorama looks "shot with a macro lens" — sharp horizontal band across the middle, soft top/bottom.
-3. Add it behind a toggle in the default scene; measure cost on/off.
+1. Take a procedural building or terrain mesh. Evaluate silhouette readability: does the shape read clearly from its outline alone? Simplify geometry until it does.
+2. Define a detail density budget: how many distinct objects/materials are allowed in a 50×50 m area? Enforce it in a test scene.
+3. Test LOD: move the camera far from a detailed mesh. At what distance does detail become noise? Set LOD transition to cull detail before that point.
 
-**Check:** toggling changes only GPU cost + blur, never gameplay or camera behavior; blur band edges are smooth (no hard focus line).
+**Check:** shapes are identifiable from silhouette; no "visual clutter" at distance; compositions stay clean under free camera movement.
+
+## 1.6 UI integration + performance budget
+
+### Concepts to master
+- **Diegetic vs non-diegetic UI** — diegetic = in-world (stylistically integrated), non-diegetic = clean overlay (HUD). Core design decision.
+- **Skeuomorphic UI design** — UI mimics physical/painted materials (parchment, ink, brushstrokes); the direction if UI should "belong" to the painterly world.
+- **Temporal Anti-Aliasing (TAA)** — can smear or dampen object-space grain if not handled carefully; common integration bug.
+- **LOD bias / Distance-based effect falloff** — reduce shader cost/complexity (grain, edge detection, ramp) at distance.
+- **Screen-space effect cost / Full-screen pass** — edge detection and color grading are full-resolution passes; cost scales with resolution, not scene complexity.
+- **Overdraw** — relevant if grain/edge effects involve transparency or layered passes; budget for open world.
+
+### Exercises
+1. Decide: diegetic or non-diegetic UI? Create a mockup of one UI element (health bar, inventory) in the painterly style. Does it "belong" to the world?
+2. Measure full-screen post-process stack cost: ramp shading + edge detection + color grading + grain overlay. Total must be ≤ 2 ms GPU at 1280×720.
+3. Test TAA + object-space grain: enable TAA, walk the camera. If grain smears or dampens, adjust grain sampling or disable TAA on grain passes.
+
+**Check:** UI feels integrated with the painterly world; full post stack is under 2 ms GPU; TAA does not destroy object-space grain.
 
 ### Phase 1 completion gate
-- Ortho diorama camera with world-locked pan + clamps.
-- `cel_ramp` pastel texture applied; wrap lighting; no pure black anywhere.
-- One tight 2048 cascade, no acne, no shimmer.
-- ≥5000 foliage instances in 1 draw call.
-- Default stack = grade + vignette; tilt-shift behind a toggle.
-- Freeze screenshots + settings into `docs/phase1_look.md` (the AGENTS-mandated "reference doc").
+- Ramp shading reads correctly under dynamic time-of-day lighting.
+- Object-space grain is temporally stable, mipped, non-tiling.
+- Edge bleeding works on UV-less procedural meshes.
+- 3D LUT enforces a consistent limited palette across the scene.
+- Simplified silhouette-driven forms validate under free camera.
+- Full NPR post stack ≤ 2 ms GPU at 1280×720 internal resolution.
 
 ---
 
@@ -424,7 +417,7 @@ Related files: `CppSrc/sim/worldgen/chunk.h` (new), `CppSrc/bind/`, `scenes/leve
 ## 4.4 Foliage placement from sim + delta persistence
 
 ### Concepts to master
-- Sim-owned placement: foliage is DATA in sim (positions/types/variation arrays), not nodes — render materializes it into the MultiMesh (ties into 1.4).
+- Sim-owned placement: foliage is DATA in sim (positions/types/variation arrays), not nodes — render materializes it into the MultiMesh.
 - Placement rules: density from biome/foliage masks + slope + noise in sim (the masks from 4.1); per-chunk foliage arrays that stream with chunks.
 - Delta persistence: save = seed + age + params + edits ONLY; world re-derives from seed. Edits = brush stamps + placed/moved foliage + (later) buildings.
 - Save format: versioned binary, deltas keyed by chunk coords; loading = regenerate + replay deltas.
