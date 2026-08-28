@@ -5,6 +5,19 @@
 [ext_resource type="Material" uid="uid://cli52w83m7ui1" path="res://assets/materials/glade_pastel.tres" id="4_luusr"]
 [ext_resource type="PackedScene" uid="uid://7t5vhgwo6vt8" path="res://scenes/levels/test/main.tscn" id="4_y2046"]
 
+[sub_resource type="CompositorEffect" id="CompositorEffect_luusr"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = true
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = false
+script = ExtResource("3_pm8i0")
+metadata/_custom_type_script = "uid://bv4uhcxb2ecu"
+
+[sub_resource type="Compositor" id="Compositor_y2046"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_luusr")])
+
 [sub_resource type="SphereMesh" id="SphereMesh_luusr"]
 material = ExtResource("4_luusr")
 
@@ -17,6 +30,7 @@ glow_bloom = 0.1
 [node name="Node3D" type="Node3D" unique_id=747140488]
 
 [node name="RTScamera" parent="." unique_id=680522844 instance=ExtResource("2_odewy")]
+compositor = SubResource("Compositor_y2046")
 projection = 1
 size = 25.0
 near = 0.1
