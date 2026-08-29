@@ -2,68 +2,62 @@
 extends CompositorEffect
 class_name PostProcessTiltShift
 
-## Tilt Shift post-processing effect.
-## Miniature/diorama depth-of-field simulation. Creates a focus band (linear or circular)
-## that stays sharp while the rest of the image blurs progressively.
-
-enum FocusShape { LINEAR, CIRCULAR }
-
 @export_group("Settings")
 
-## Shape of the focus area.
-@export var focus_shape: FocusShape = FocusShape.LINEAR:
-	set(v):
-		mutex.lock()
-		focus_shape = v
-		mutex.unlock()
-
-## Angle of the focus band in degrees (Linear shape only).
-@export_range(-90.0, 90.0, 1.0) var focus_angle: float = 0.0:
-	set(v):
-		mutex.lock()
-		focus_angle = v
-		mutex.unlock()
-
-## Vertical center of the focus band (0.0 = top, 1.0 = bottom).
-@export_range(0.0, 1.0, 0.01) var focus_center: float = 0.5:
-	set(v):
-		mutex.lock()
-		focus_center = v
-		mutex.unlock()
-
-## Width of the sharp area before blur starts.
-@export_range(0.0, 1.0, 0.01) var focus_width: float = 0.2:
-	set(v):
-		mutex.lock()
-		focus_width = v
-		mutex.unlock()
-
-## Maximum blur radius for the completely out-of-focus areas.
-@export_range(1.0, 32.0, 1.0) var blur_amount: float = 8.0:
+@export_range(0.0, 64.0, 0.5) var blur_amount: float = 4.0:
 	set(v):
 		mutex.lock()
 		blur_amount = v
 		mutex.unlock()
 
-## Blend between original and tilt-shift result. 0 = bypass, 1 = full.
-@export_range(0.0, 1.0, 0.01) var strength: float = 1.0:
+@export_range(0.0, 2.0, 0.01) var strength: float = 0.7:
 	set(v):
 		mutex.lock()
 		strength = v
+		mutex.unlock()
+
+@export_group("Focus Plane")
+
+@export_range(0.0, 500.0, 0.1) var focus_distance: float = 35.0:
+	set(v):
+		mutex.lock()
+		focus_distance = v
+		mutex.unlock()
+
+@export_range(0.0, 100.0, 0.1) var near_start: float = 40.0:
+	set(v):
+		mutex.lock()
+		near_start = v
+		mutex.unlock()
+
+@export_range(0.0, 100.0, 0.1) var near_end: float = 47.0:
+	set(v):
+		mutex.lock()
+		near_end = v
+		mutex.unlock()
+
+@export_range(0.0, 100.0, 0.1) var far_start: float = 50.0:
+	set(v):
+		mutex.lock()
+		far_start = v
+		mutex.unlock()
+
+@export_range(0.0, 500.0, 0.1) var far_end: float = 100.0:
+	set(v):
+		mutex.lock()
+		far_end = v
 		mutex.unlock()
 
 @export_group("Advanced Settings")
 
 @export_subgroup("Bokeh")
 
-## Boosts bright pixels in blurred areas to create bokeh highlights.
 @export_range(0.0, 10.0, 0.1) var highlight_boost: float = 0.0:
 	set(v):
 		mutex.lock()
 		highlight_boost = v
 		mutex.unlock()
 
-## Threshold for bokeh highlights. Only pixels brighter than this will be boosted.
 @export_range(0.0, 1.0, 0.01) var highlight_threshold: float = 0.8:
 	set(v):
 		mutex.lock()
@@ -72,18 +66,36 @@ enum FocusShape { LINEAR, CIRCULAR }
 
 @export_subgroup("Looks")
 
-## Post-blur saturation boost. Values > 1.0 enhance the miniature/diorama illusion.
 @export_range(1.0, 3.0, 0.01) var saturation_boost: float = 1.3:
 	set(v):
 		mutex.lock()
 		saturation_boost = v
 		mutex.unlock()
 
-## Gaussian sigma for the blur. 0 = auto-calculate based on radius.
-@export_range(0.0, 20.0, 0.1) var sigma: float = 0.0:
+@export_range(0.0, 20.0, 0.1) var sigma: float = 2.0:
 	set(v):
 		mutex.lock()
 		sigma = v
+		mutex.unlock()
+
+@export_subgroup("Camera")
+
+@export_range(0.01, 10.0, 0.01) var near_plane: float = 1.0:
+	set(v):
+		mutex.lock()
+		near_plane = v
+		mutex.unlock()
+
+@export_range(10.0, 10000.0, 10.0) var far_plane: float = 500.0:
+	set(v):
+		mutex.lock()
+		far_plane = v
+		mutex.unlock()
+
+@export var is_orthographic: bool = true:
+	set(v):
+		mutex.lock()
+		is_orthographic = v
 		mutex.unlock()
 
 var rd: RenderingDevice
@@ -91,15 +103,17 @@ var shader: RID
 var pipeline: RID
 var _shader_copy: RID
 var _pipe_copy: RID
-var _intermediate: RID
-var _intermediate_b: RID
+var _nearest_sampler: RID
 
 var mutex: Mutex = Mutex.new()
+var _intermediate: RID
+var _intermediate_b: RID
 var _last_size: Vector2i = Vector2i()
 
 
 func _init() -> void:
 	effect_callback_type = EFFECT_CALLBACK_TYPE_POST_TRANSPARENT
+	access_resolved_depth = true
 	rd = RenderingServer.get_rendering_device()
 	if rd == null:
 		return
@@ -123,6 +137,13 @@ func _create_pipeline() -> void:
 		_shader_copy = rd.shader_create_from_spirv(copy_file.get_spirv())
 		if _shader_copy.is_valid():
 			_pipe_copy = rd.compute_pipeline_create(_shader_copy)
+
+	var sampler_state := RDSamplerState.new()
+	sampler_state.min_filter = RenderingDevice.SAMPLER_FILTER_NEAREST
+	sampler_state.mag_filter = RenderingDevice.SAMPLER_FILTER_NEAREST
+	sampler_state.repeat_u = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
+	sampler_state.repeat_v = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
+	_nearest_sampler = rd.sampler_create(sampler_state)
 
 
 func _render_callback(
@@ -162,29 +183,35 @@ func _render_callback(
 		_last_size = size
 
 	mutex.lock()
-	var _fc: float = focus_center
-	var _fw: float = focus_width
+	var _fd: float = focus_distance
+	var _ns: float = near_start
+	var _ne: float = near_end
+	var _fs: float = far_start
+	var _fe: float = far_end
 	var _ba: float = blur_amount
 	var _si: float = sigma
 	var _sb: float = saturation_boost
-	var _an: float = focus_angle
-	var _sh: float = float(focus_shape)
 	var _hb: float = highlight_boost
 	var _ht: float = highlight_threshold
 	var _st: float = strength
+	var _np: float = near_plane
+	var _fp: float = far_plane
+	var _iso: float = 1.0 if is_orthographic else 0.0
 	mutex.unlock()
 
 	var push_h: PackedFloat32Array = PackedFloat32Array([
-		_fc, _fw, _ba, _si,
-		_sb, _an, _sh, _hb,
-		_ht, _st, 1.0, 0.0,
-		0.0, 0.0, 0.0, 0.0,
+		_fd, _ns, _ne, _fs,
+		_fe, _ba, _si, _sb,
+		_hb, _ht, _st, 1.0,
+		0.0, _np, _fp, _iso,
+		0.0, 0.0, 0.0, 0.0
 	])
 	var push_v: PackedFloat32Array = PackedFloat32Array([
-		_fc, _fw, _ba, _si,
-		_sb, _an, _sh, _hb,
-		_ht, _st, 0.0, 1.0,
-		0.0, 0.0, 0.0, 0.0,
+		_fd, _ns, _ne, _fs,
+		_fe, _ba, _si, _sb,
+		_hb, _ht, _st, 0.0,
+		1.0, _np, _fp, _iso,
+		0.0, 0.0, 0.0, 0.0
 	])
 
 	var x_groups: int = (size.x + 15) / 16
@@ -192,9 +219,15 @@ func _render_callback(
 
 	for view: int in render_scene_buffers.get_view_count():
 		var color_image: RID = render_scene_buffers.get_color_layer(view)
-		if not color_image.is_valid() or not _intermediate.is_valid():
+		var depth_image: RID = render_scene_buffers.get_depth_layer(view)
+
+		if not color_image.is_valid() or not depth_image.is_valid():
 			continue
-	
+		if not _intermediate.is_valid() or not _intermediate_b.is_valid():
+			continue
+		if not _nearest_sampler.is_valid():
+			continue
+
 		if _pipe_copy.is_valid():
 			var u_cp_src: RDUniform = RDUniform.new()
 			u_cp_src.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
@@ -227,11 +260,19 @@ func _render_callback(
 		u_dst_h.add_id(_intermediate_b)
 		var set_dst_h: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst_h])
 
+		var u_depth_h: RDUniform = RDUniform.new()
+		u_depth_h.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+		u_depth_h.binding = 0
+		u_depth_h.add_id(_nearest_sampler)
+		u_depth_h.add_id(depth_image)
+		var set_depth_h: RID = UniformSetCacheRD.get_cache(shader, 2, [u_depth_h])
+
 		var cl_h: int = rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(cl_h, pipeline)
 		rd.compute_list_bind_uniform_set(cl_h, set_src_h, 0)
 		rd.compute_list_bind_uniform_set(cl_h, set_dst_h, 1)
-		rd.compute_list_set_push_constant(cl_h, push_h.to_byte_array(), 64)
+		rd.compute_list_bind_uniform_set(cl_h, set_depth_h, 2)
+		rd.compute_list_set_push_constant(cl_h, push_h.to_byte_array(), 80)
 		rd.compute_list_dispatch(cl_h, x_groups, y_groups, 1)
 		rd.compute_list_end()
 
@@ -247,13 +288,22 @@ func _render_callback(
 		u_dst_v.add_id(color_image)
 		var set_dst_v: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst_v])
 
+		var u_depth_v: RDUniform = RDUniform.new()
+		u_depth_v.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+		u_depth_v.binding = 0
+		u_depth_v.add_id(_nearest_sampler)
+		u_depth_v.add_id(depth_image)
+		var set_depth_v: RID = UniformSetCacheRD.get_cache(shader, 2, [u_depth_v])
+
 		var cl_v: int = rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(cl_v, pipeline)
 		rd.compute_list_bind_uniform_set(cl_v, set_src_v, 0)
 		rd.compute_list_bind_uniform_set(cl_v, set_dst_v, 1)
-		rd.compute_list_set_push_constant(cl_v, push_v.to_byte_array(), 64)
+		rd.compute_list_bind_uniform_set(cl_v, set_depth_v, 2)
+		rd.compute_list_set_push_constant(cl_v, push_v.to_byte_array(), 80)
 		rd.compute_list_dispatch(cl_v, x_groups, y_groups, 1)
 		rd.compute_list_end()
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -281,3 +331,6 @@ func _cleanup() -> void:
 	if _intermediate_b.is_valid():
 		rd.free_rid(_intermediate_b)
 		_intermediate_b = RID()
+	if _nearest_sampler.is_valid():
+		rd.free_rid(_nearest_sampler)
+		_nearest_sampler = RID()
