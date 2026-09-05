@@ -624,3 +624,652 @@ mesh = SubResource("ArrayMesh_8lrx3")
 
 [node name="Object_15" type="MeshInstance3D" parent="World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=601271552]
 mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World" unique_id=678075196]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.947374, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World" unique_id=1025635614]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/Meshes" unique_id=1294652257]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/Meshes" unique_id=1962309830]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/Meshes" unique_id=1591725779]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/Meshes" unique_id=2128590993]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/Meshes" unique_id=44619655]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/Meshes" unique_id=2072386027]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/Meshes" unique_id=508731057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World" unique_id=5453642]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/Sketchfab_model" unique_id=1009810337]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1472579081]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1436100771]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=303864268]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=736320643]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1756676929]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World" unique_id=1789426022]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.958858, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World" unique_id=1268632388]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=1855589218]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=528025424]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=339104780]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=1101095426]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=375156213]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=940707261]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/Meshes" unique_id=1229678142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World" unique_id=949819124]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/Sketchfab_model" unique_id=1943286765]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=601945509]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1209479201]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=72427564]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=369308506]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1207735186]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World" unique_id=1445413690]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12.027211)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World" unique_id=1502715972]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=1860729176]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=1346443850]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=819638893]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=2006979770]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=1360939469]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=396252953]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/Meshes" unique_id=312366070]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World" unique_id=117460429]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/Sketchfab_model" unique_id=735583317]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=867951753]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=2069667084]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1838504883]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1447373395]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=877481665]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World" unique_id=1668034857]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.726503, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World" unique_id=1275663600]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=1091169643]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=1170309975]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=692408834]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=864467429]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=1277244289]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=1115313513]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/Meshes" unique_id=1951990706]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World" unique_id=1160345229]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/Sketchfab_model" unique_id=383143719]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=673828606]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=874693451]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1890172343]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=150036054]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=785616874]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World" unique_id=733397494]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.662149, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World" unique_id=1106580503]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=1601329066]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=890275072]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=455691209]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=2077604863]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=1960031427]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=1995923473]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/Meshes" unique_id=485091380]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World" unique_id=1768594132]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/Sketchfab_model" unique_id=1491884298]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1098842397]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=336233287]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=438071672]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=583887639]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=741395688]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World/World" unique_id=361888740]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 11.999999)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World/World" unique_id=1881589650]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=795268056]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=1779527289]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=2043233697]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=386858786]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=772780158]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=1144742335]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Meshes" unique_id=2057349384]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World/World" unique_id=804197456]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/World/Sketchfab_model" unique_id=36059742]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1609843574]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=542428392]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1076797715]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=75052032]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=159222236]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World/World/World" unique_id=27707656]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World/World/World" unique_id=1125790343]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=1630468968]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=161754324]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=170038491]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=1769868138]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=563274531]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=840904466]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Meshes" unique_id=172341954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World/World/World" unique_id=169089123]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/World/World/Sketchfab_model" unique_id=926426101]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=2096836027]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=756732065]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=2064446386]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1780820486]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=178197647]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World/World/World/World" unique_id=555389924]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World/World/World/World" unique_id=807046452]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=2127740395]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=543466858]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=983993727]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=1654520290]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=10657855]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=1916809820]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Meshes" unique_id=744655230]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World/World/World/World" unique_id=1664910539]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/World/World/World/Sketchfab_model" unique_id=688987179]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1948551669]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1085735743]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1970941959]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1251512500]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=575040022]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World/World/World/World/World" unique_id=1181891548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -36)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World" unique_id=904950552]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=906905666]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1419204423]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1622991695]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1200143851]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=929825897]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=792784630]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=246369189]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World" unique_id=1130228780]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/Sketchfab_model" unique_id=1991155454]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1702119173]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=779528412]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1818126908]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1848625432]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1557927350]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World" unique_id=775554746]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World" unique_id=1892923999]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1406097621]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1591768087]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1077285350]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=260420477]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1749440848]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=2137567824]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1161863101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World" unique_id=1637429823]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model" unique_id=1274374415]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=2121937377]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1099823443]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=41842539]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=833281960]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1784471392]
+mesh = SubResource("ArrayMesh_fv3by")
+
+[node name="World" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World" unique_id=152594751]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+
+[node name="Meshes" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World/World" unique_id=519334454]
+
+[node name="Cube" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1194547818]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, 1, 0.5, 0)
+material_override = SubResource("ShaderMaterial_y0acb")
+mesh = SubResource("BoxMesh_72ix8")
+
+[node name="Wall" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=2142470476]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, -5.7999997, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall2" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=1183758213]
+transform = Transform3D(-4.371138e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.371138e-08, 5.8, 1.5, 3.5)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall3" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=2049332394]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, 3.5000005, 1.5, 5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Wall4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=2019414606]
+transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -3.5, 1.5, -5.8)
+material_override = SubResource("ShaderMaterial_vkq25")
+mesh = SubResource("BoxMesh_7lrji")
+
+[node name="Floor" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=2000161884]
+mesh = SubResource("PlaneMesh_0ip28")
+
+[node name="Sphere" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Meshes" unique_id=919563050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0.5, 0)
+material_override = SubResource("ShaderMaterial_b6bv0")
+mesh = SubResource("SphereMesh_2vj2h")
+
+[node name="Sketchfab_model" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World/World" unique_id=489231864]
+transform = Transform3D(-0.24904981, 0.021775905, 9.51855e-10, 0, -1.0927847e-08, 0.25, 0.021775905, 0.24904981, 1.0886313e-08, 3.7517192, -0.9441482, 3.982568)
+
+[node name="Haunted_House Halloween_obj_cleaner_materialmerger_gles" type="Node3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model" unique_id=1873092721]
+
+[node name="Object_4" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1084231505]
+material_override = SubResource("ShaderMaterial_eb114")
+mesh = SubResource("ArrayMesh_aw4an")
+
+[node name="Object_5" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1731180423]
+mesh = SubResource("ArrayMesh_au43s")
+
+[node name="Object_7" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1148021761]
+mesh = SubResource("ArrayMesh_2pdf4")
+
+[node name="Object_11" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1962620181]
+mesh = SubResource("ArrayMesh_8lrx3")
+
+[node name="Object_15" type="MeshInstance3D" parent="World/World/World/World/World/World/World/World/World/World/World/World/Sketchfab_model/Haunted_House Halloween_obj_cleaner_materialmerger_gles" unique_id=1522644066]
+mesh = SubResource("ArrayMesh_fv3by")

@@ -34,6 +34,7 @@ compositor = SubResource("Compositor_y2046")
 projection = 1
 size = 25.0
 movement_smoothing = 12.0
+tilt_shift_off_size = 60.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2146224706]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.12444, 3.0285192)
@@ -45,7 +46,7 @@ mesh = SubResource("SphereMesh_luusr")
 transform = Transform3D(0.7071068, 0.5, -0.5, 0, 0.7071068, 0.7071068, 0.7071068, -0.5, 0.5, 0, -1, 0)
 shadow_enabled = true
 directional_shadow_mode = 0
-directional_shadow_max_distance = 500.0
+directional_shadow_max_distance = 220.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2044714055]
 environment = SubResource("Environment_luusr")
