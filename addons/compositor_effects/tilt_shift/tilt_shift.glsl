@@ -28,27 +28,29 @@ layout(push_constant, std430) uniform PushConstant {
 } pc;
 
 float linearize_depth(float raw_depth) {
+    // Godot 4.3+ uses a REVERSED-Z depth buffer: raw depth is 1.0 at the near
+    // plane and 0.0 at the far plane.
     if (pc.is_orthographic > 0.5) {
-	return pc.near_plane + raw_depth * (pc.far_plane - pc.near_plane);
+	return pc.near_plane + (1.0 - raw_depth) * (pc.far_plane - pc.near_plane);
     }
     float n = pc.near_plane;
     float f = pc.far_plane;
-    return (n * f) / (f - raw_depth * (f - n));
+    return (n * f) / (n + raw_depth * (f - n));
 }
 
 float compute_coc(float depth) {
+    // Signed blur amount in [-1, 1]: negative = near field, positive = far
+    // field, 0 = in focus. `strength` is applied ONCE (here), never again in
+    // the mix below — the old code multiplied it twice, halving the blur.
     float delta = depth - pc.focus_distance;
-    float coc;
     if (delta < 0.0) {
         float range = max(pc.near_start - pc.near_end, 0.0001);
         float t = clamp((-delta - pc.near_end) / range, 0.0, 1.0);
-        coc = -t;
-    } else {
-        float range = max(pc.far_end - pc.far_start, 0.0001);
-        float t = clamp((delta - pc.far_start) / range, 0.0, 1.0);
-        coc = t;
+        return -t;
     }
-    return coc * pc.blur_amount * pc.strength;
+    float range = max(pc.far_end - pc.far_start, 0.0001);
+    float t = clamp((delta - pc.far_start) / range, 0.0, 1.0);
+    return t;
 }
 
 float gaussian(float x, float s) {
@@ -65,8 +67,8 @@ void main() {
     float raw_depth = textureLod(depth_tex, uv, 0.0).r;
     float linear_depth = linearize_depth(raw_depth);
 
-    float coc = compute_coc(linear_depth);
-    int radius = clamp(int(abs(coc)), 0, 32);
+    float coc = compute_coc(linear_depth) * pc.blur_amount * pc.strength;
+    int radius = clamp(int(round(abs(coc))), 0, 32);
 
     vec4 original = imageLoad(source_img, coord);
     vec3 color = original.rgb;
@@ -100,15 +102,17 @@ void main() {
         alpha = accum.a / max(weight_sum, 0.0001);
     }
 
-    float mix_factor = clamp(abs(coc) / max(pc.blur_amount * pc.strength, 0.001), 0.0, 1.0);
-    if (pc.direction_y > 0.5) 
+    if (pc.direction_y > 0.5)
     {
 	    if (pc.saturation_boost > 1.001)
 	    {
         	float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
         	color = mix(vec3(luma), color, pc.saturation_boost);
 	    }
-	    color = mix(original.rgb, color, mix_factor * pc.strength);
+	    // coc is already scaled by blur_amount * strength: the blurred result
+	    // is used as-is when fully out of focus (mix_factor == 1 there).
+	    float mix_factor = clamp(abs(coc), 0.0, 1.0);
+	    color = mix(original.rgb, color, mix_factor);
     }
 
     imageStore(dest_img, coord, vec4(color, alpha));
