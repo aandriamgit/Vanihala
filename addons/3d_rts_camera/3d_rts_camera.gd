@@ -20,9 +20,10 @@ extends Camera3D
 #    responsive start, smooth stop, no double-filter input lag. Keyboard,
 #    edge scroll and boost feed the same filter; speed scales with the
 #    view size (fast glides zoomed out, precise control zoomed in).
-#  - Zoom-adaptive pitch limits (based on the CURRENT size): zoomed out the
-#    camera eases toward a top-down map view; zoomed in the full diorama
-#    angle range is free. Never snaps.
+#  - The view angle DRIVES with zoom, smoothly, BOTH ways: a 3/4 diorama
+#    angle up close, a top-down map view zoomed out, and the exact same
+#    curve on the way back in. Manual MMB tilt is an offset on top of the
+#    driven angle, so it survives zoom changes.
 #  - Auto-focuses the PostProcessTiltShift effect: focus plane tracks the
 #    orbit center, blur bands track the ortho size, and the effect fades
 #    out with zoom (hard-disabled — zero GPU cost — once fully faded).
@@ -42,8 +43,14 @@ extends Camera3D
 @export_range(0.05, 10.0) var speed_max_scale: float = 5.0
 
 @export_category("Zoom")
-@export var zoom_min: float = 6.0
-@export var zoom_max: float = 150.0
+# Closest view — tuned so the diorama fills the frame comfortably without
+# clipping into geometry (10 ortho units on a ~35 m test diorama).
+@export var zoom_min: float = 10.0
+# Zoomed-out limit. Keep in sync with pitch_out_size: the pitch transition
+# must end EXACTLY at the max zoom (and start exactly at zoom_min), so the
+# camera only ever stops zooming at its true limit — never early, at the
+# moment the angle finishes moving.
+@export var zoom_max: float = 200.0
 @export_range(1.01, 2.0) var zoom_factor: float = 1.18
 @export_range(0.1, 50.0) var zoom_smoothing: float = 8.0
 ## Keep the world point under the cursor pinned while zooming (guarded:
@@ -59,10 +66,6 @@ extends Camera3D
 @export var zoom_keyboard_enabled: bool = true
 ## zoom_factor steps applied per second while the key is held.
 @export_range(0.5, 30.0) var keyboard_zoom_speed: float = 6.0
-## Hold RMB and drag vertically to zoom (drag up = zoom in).
-@export var zoom_rmb_drag_enabled: bool = true
-## zoom_factor steps applied per 100 px of vertical drag.
-@export_range(0.1, 5.0) var drag_zoom_steps_per_100px: float = 1.0
 
 @export_category("Edge scrolling")
 @export var edge_scroll_enabled: bool = true
@@ -71,20 +74,28 @@ extends Camera3D
 @export_category("Rotation")
 @export_range(0.01, 2.0) var yaw_deg_per_px: float = 0.3
 @export var keyboard_yaw_speed: float = 120.0
-@export_range(5.0, 89.0) var pitch_min_deg: float = 30.0
-@export_range(5.0, 89.0) var pitch_max_deg: float = 65.0
-@export_range(5.0, 89.0) var initial_pitch_deg: float = 50.0
 @export var capture_mouse_on_mmb: bool = false
 
-## Pitch limits widen toward a top-down map view when zoomed out (the camera
-## gently eases into the allowed band — never a snap).
+## The view angle follows zoom smoothly in BOTH directions: a 3/4 diorama
+## angle when zoomed in, easing to a top-down map view when zoomed out.
 @export var adaptive_pitch: bool = true
-## Zoomed-out pitch limits (view size >= pitch_anchor_out_size).
-@export_range(5.0, 89.0) var pitch_out_min_deg: float = 55.0
-@export_range(5.0, 89.0) var pitch_out_max_deg: float = 80.0
-## Ortho size anchors between the close-zoom and zoomed-out pitch limits.
-@export_range(1.0, 300.0) var pitch_anchor_in_size: float = 25.0
-@export_range(1.0, 300.0) var pitch_anchor_out_size: float = 110.0
+## View angle when zoomed in (view size <= pitch_in_size).
+@export_range(10.0, 89.0) var pitch_in_deg: float = 45.0
+## View angle when zoomed out (view size >= pitch_out_size).
+@export_range(10.0, 89.0) var pitch_out_deg: float = 70.0
+## View size at/below which pitch_in_deg applies. Keep == zoom_min so the
+## angle transition spans the WHOLE zoom range and finishes exactly at the
+## max zoom-in (zooming in from the spawn size still moves the angle).
+@export_range(1.0, 300.0) var pitch_in_size: float = 10.0
+## View size at/above which pitch_out_deg applies. Keep == zoom_max so the
+## angle finishes exactly when the camera reaches max zoom-out — no dead
+## stretch of zoom after the pitch has already settled.
+@export_range(1.0, 300.0) var pitch_out_size: float = 200.0
+## Extra tilt the user may add on top via MMB vertical drag (persists
+## across zoom changes).
+@export_range(0.0, 30.0) var pitch_manual_max_deg: float = 20.0
+## Easing rate for the manual MMB tilt (frame-rate independent).
+@export_range(1.0, 30.0) var pitch_offset_easing: float = 6.0
 
 @export_category("Rig")
 ## Base distance from the camera to the orbit center. The eye may be pushed
@@ -110,10 +121,12 @@ var _target_center := Vector3.ZERO
 var _target_size := 25.0
 var _yaw := 0.0
 var _pitch := 0.0
+# Manual tilt offset (MMB vertical drag), eased on top of the driven angle.
+var _pitch_offset := 0.0
+var _pitch_offset_target := 0.0
 var _vel := Vector3.ZERO
 var _is_mmb_rotating := false
 var _is_mmb_panning := false
-var _is_rmb_zooming := false
 var _last_mouse := Vector2.ZERO
 var _tilt_shift: CompositorEffect = null
 var _ts_base_strength := -1.0
@@ -138,8 +151,7 @@ func _ready() -> void:
 	size = _target_size
 	_center.y = ground_height
 	_target_center.y = ground_height
-	var lim := _pitch_limits()
-	_pitch = clampf(deg_to_rad(initial_pitch_deg), lim.x, lim.y)
+	_pitch = _driven_pitch()
 	_yaw = 0.0
 	_find_tilt_shift()
 	_apply_transform()
@@ -150,17 +162,23 @@ func _exp_blend(rate: float, delta: float) -> float:
 	return 1.0 - exp(-rate * delta)
 
 
-func _pitch_limits() -> Vector2:
-	# Pitch band as (min, max) radians, interpolating from the close-zoom
-	# limits to the zoomed-out map-view limits between the two size anchors.
-	# Uses the CURRENT size (not the zoom target): while a zoom is still
-	# gliding, the limits must match what is actually on screen.
+func _pitch_base_deg() -> float:
+	# Zoom-driven view angle in degrees. The curve depends ONLY on the
+	# current size, so zooming in and out traverse the exact same path —
+	# the transition is smooth and symmetric by construction.
 	if not adaptive_pitch:
-		return Vector2(deg_to_rad(pitch_min_deg), deg_to_rad(pitch_max_deg))
-	var t := smoothstep(pitch_anchor_in_size, pitch_anchor_out_size, size)
-	return Vector2(
-		deg_to_rad(lerpf(pitch_min_deg, pitch_out_min_deg, t)),
-		deg_to_rad(lerpf(pitch_max_deg, pitch_out_max_deg, t))
+		return pitch_in_deg
+	var t := smoothstep(pitch_in_size, pitch_out_size, size)
+	return lerpf(pitch_in_deg, pitch_out_deg, t)
+
+
+func _driven_pitch() -> float:
+	# Final pitch = zoom-driven base + manual offset, hard-clamped to a
+	# safe absolute range so the view can never go under the horizon or
+	# perfectly top-down (breaks pan raycasts).
+	return clampf(
+		deg_to_rad(_pitch_base_deg()) + _pitch_offset,
+		deg_to_rad(10.0), deg_to_rad(85.0)
 	)
 
 
@@ -229,12 +247,12 @@ func _process(delta: float) -> void:
 		if zoom_dir != 0.0:
 			_zoom_step(pow(zoom_factor, -zoom_dir * keyboard_zoom_speed * delta))
 
-	# Zoom-adaptive pitch limits: when the band moves (zooming out/in) the
-	# camera gently eases toward it — never a snap.
-	var limits := _pitch_limits()
-	var pitch_clamped := clampf(_pitch, limits.x, limits.y)
-	if not is_equal_approx(pitch_clamped, _pitch):
-		_pitch = lerp_angle(_pitch, pitch_clamped, _exp_blend(3.0, delta))
+	# Manual tilt eases toward its target. The zoom-driven base is followed
+	# EXACTLY (size is already exponentially smoothed), so the angle glides
+	# symmetrically with zoom — in and out — with zero extra lag.
+	_pitch_offset = lerpf(_pitch_offset, _pitch_offset_target,
+			_exp_blend(pitch_offset_easing, delta))
+	_pitch = _driven_pitch()
 
 	# Smooth the ortho size (frame-rate independent). The zoom rate adapts:
 	# glides longer when zoomed out (notches cover more ground there),
@@ -266,9 +284,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					_is_mmb_rotating = true
 				if capture_mouse_on_mmb:
 					Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-			MOUSE_BUTTON_RIGHT:
-				if zoom_rmb_drag_enabled:
-					_is_rmb_zooming = true
 	elif event is InputEventMouseButton and not event.pressed:
 		match event.button_index:
 			MOUSE_BUTTON_MIDDLE:
@@ -276,9 +291,6 @@ func _unhandled_input(event: InputEvent) -> void:
 				_is_mmb_rotating = false
 				if capture_mouse_on_mmb:
 					Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-			MOUSE_BUTTON_RIGHT:
-				_is_rmb_zooming = false
-
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
 		if _is_mmb_panning:
@@ -297,16 +309,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			# Mouse deltas are already per-event: NO delta-time scaling.
 			var dx := -mm.relative.x * deg_to_rad(yaw_deg_per_px)
 			_yaw += dx
-			var pitch_step := mm.relative.y * deg_to_rad(yaw_deg_per_px)
-			var limits := _pitch_limits()
-			_pitch = clampf(_pitch + pitch_step, limits.x, limits.y)
+			# Vertical drag nudges the tilt RELATIVE to the zoom-driven angle;
+			# the offset persists when you zoom afterwards.
+			_pitch_offset_target = clampf(
+				_pitch_offset_target + mm.relative.y * deg_to_rad(yaw_deg_per_px),
+				-deg_to_rad(pitch_manual_max_deg), deg_to_rad(pitch_manual_max_deg))
 			_apply_transform()
-		elif _is_rmb_zooming:
-			# Drag up = zoom in, drag down = zoom out (same direction as the
-			# wheel). Routes through _zoom_step, so smoothing and cursor
-			# anchoring behave exactly like the wheel.
-			var steps := mm.relative.y * drag_zoom_steps_per_100px * 0.01
-			_zoom_step(pow(zoom_factor, steps))
 
 
 func _zoom_step(factor: float) -> void:
