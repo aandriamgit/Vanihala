@@ -51,7 +51,7 @@ class_name PostProcessTiltShift
 
 @export_subgroup("Looks")
 
-@export_range(1.0, 3.0, 0.01) var saturation_boost: float = 1.3:
+@export_range(1.0, 3.0, 0.01) var saturation_boost: float = 1.0:
 	set(v):
 		mutex.lock()
 		saturation_boost = v
