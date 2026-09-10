@@ -35,10 +35,10 @@ projection = 1
 size = 25.0
 movement_smoothing = 12.0
 zoom_min = 28.0
-tilt_shift_off_size = 60.0
+tilt_shift_full_size = 30.0
+tilt_shift_off_size = 45.0
 pitch_manual_max_deg = 5.0
-focus_band_scale = 0.1
-blur_ramp_scale = 0.1
+tilt_shift_debug = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2146224706]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.12444, 3.0285192)

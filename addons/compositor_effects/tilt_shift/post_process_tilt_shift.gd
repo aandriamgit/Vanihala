@@ -4,7 +4,7 @@ class_name PostProcessTiltShift
 
 @export_group("Settings")
 
-@export_range(0.0, 64.0, 0.5) var blur_amount: float = 4.0:
+@export_range(0.0, 64.0, 0.5) var blur_amount: float = 8.0:
 	set(v):
 		mutex.lock()
 		blur_amount = v
@@ -16,36 +16,21 @@ class_name PostProcessTiltShift
 		strength = v
 		mutex.unlock()
 
-@export_group("Focus Plane")
-
-@export_range(0.0, 500.0, 0.1) var focus_distance: float = 35.0:
+@export_group("Screen Bands")
+## Distance from screen center to the sharp/blur edge, as a fraction of
+## screen height (0.5 = sharp only at dead center). The RTS camera writes
+## its focus_band_scale slider * 0.5 here every frame.
+@export_range(0.0, 0.5, 0.005) var band: float = 0.175:
 	set(v):
 		mutex.lock()
-		focus_distance = v
+		band = v
 		mutex.unlock()
 
-@export_range(0.0, 100.0, 0.1) var near_start: float = 40.0:
+## Width of the sharp-to-blur gradient, as a fraction of screen height.
+@export_range(0.005, 0.5, 0.005) var ramp: float = 0.15:
 	set(v):
 		mutex.lock()
-		near_start = v
-		mutex.unlock()
-
-@export_range(0.0, 100.0, 0.1) var near_end: float = 47.0:
-	set(v):
-		mutex.lock()
-		near_end = v
-		mutex.unlock()
-
-@export_range(0.0, 100.0, 0.1) var far_start: float = 50.0:
-	set(v):
-		mutex.lock()
-		far_start = v
-		mutex.unlock()
-
-@export_range(0.0, 500.0, 0.1) var far_end: float = 100.0:
-	set(v):
-		mutex.lock()
-		far_end = v
+		ramp = v
 		mutex.unlock()
 
 @export_group("Advanced Settings")
@@ -72,48 +57,21 @@ class_name PostProcessTiltShift
 		saturation_boost = v
 		mutex.unlock()
 
-@export_range(0.0, 20.0, 0.1) var sigma: float = 2.0:
-	set(v):
-		mutex.lock()
-		sigma = v
-		mutex.unlock()
-
-@export_subgroup("Camera")
-
-@export_range(0.01, 10.0, 0.01) var near_plane: float = 1.0:
-	set(v):
-		mutex.lock()
-		near_plane = v
-		mutex.unlock()
-
-@export_range(10.0, 10000.0, 10.0) var far_plane: float = 500.0:
-	set(v):
-		mutex.lock()
-		far_plane = v
-		mutex.unlock()
-
-@export var is_orthographic: bool = true:
-	set(v):
-		mutex.lock()
-		is_orthographic = v
-		mutex.unlock()
-
 var rd: RenderingDevice
 var shader: RID
 var pipeline: RID
 var _shader_copy: RID
 var _pipe_copy: RID
-var _nearest_sampler: RID
 
 var mutex: Mutex = Mutex.new()
 var _intermediate: RID
 var _intermediate_b: RID
 var _last_size: Vector2i = Vector2i()
+var _pipeline_warned := false
 
 
 func _init() -> void:
 	effect_callback_type = EFFECT_CALLBACK_TYPE_POST_TRANSPARENT
-	access_resolved_depth = true
 	rd = RenderingServer.get_rendering_device()
 	if rd == null:
 		return
@@ -138,13 +96,6 @@ func _create_pipeline() -> void:
 		if _shader_copy.is_valid():
 			_pipe_copy = rd.compute_pipeline_create(_shader_copy)
 
-	var sampler_state := RDSamplerState.new()
-	sampler_state.min_filter = RenderingDevice.SAMPLER_FILTER_NEAREST
-	sampler_state.mag_filter = RenderingDevice.SAMPLER_FILTER_NEAREST
-	sampler_state.repeat_u = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
-	sampler_state.repeat_v = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
-	_nearest_sampler = rd.sampler_create(sampler_state)
-
 
 func _render_callback(
 	p_effect_callback_type: EffectCallbackType,
@@ -152,7 +103,17 @@ func _render_callback(
 ) -> void:
 	if rd == null:
 		return
+	if not enabled:
+		# Stays disabled: do NOT call super / re-enable here, or the camera's
+		# zoom-fade logic (which toggles `enabled` every frame) would
+		# resurrect a deliberately disabled effect.
+		return
 	if not shader.is_valid() or not pipeline.is_valid():
+		# Shader failed to compile (SPIR-V error, removed file, etc.):
+		# degrade gracefully instead of rendering garbage or error-spamming.
+		if not _pipeline_warned:
+			_pipeline_warned = true
+			push_warning("TiltShift: compute pipeline unavailable, effect skipped.")
 		return
 
 	var render_scene_buffers: RenderSceneBuffersRD = p_render_data.get_render_scene_buffers()
@@ -183,35 +144,28 @@ func _render_callback(
 		_last_size = size
 
 	mutex.lock()
-	var _fd: float = focus_distance
-	var _ns: float = near_start
-	var _ne: float = near_end
-	var _fs: float = far_start
-	var _fe: float = far_end
+	var _band: float = band
+	var _ramp: float = ramp
 	var _ba: float = blur_amount
-	var _si: float = sigma
+	var _st: float = strength
 	var _sb: float = saturation_boost
 	var _hb: float = highlight_boost
 	var _ht: float = highlight_threshold
-	var _st: float = strength
-	var _np: float = near_plane
-	var _fp: float = far_plane
-	var _iso: float = 1.0 if is_orthographic else 0.0
 	mutex.unlock()
 
+	# 12 floats = 48 bytes: must exactly match the shader's PushConstant
+	# struct (9 params + 3 pads) or Godot rejects the push constant.
 	var push_h: PackedFloat32Array = PackedFloat32Array([
-		_fd, _ns, _ne, _fs,
-		_fe, _ba, _si, _sb,
-		_hb, _ht, _st, 1.0,
-		0.0, _np, _fp, _iso,
-		0.0, 0.0, 0.0, 0.0
+		_band, _ramp, _ba, _st,
+		_sb, _hb, _ht,
+		1.0, 0.0,
+		0.0, 0.0, 0.0
 	])
 	var push_v: PackedFloat32Array = PackedFloat32Array([
-		_fd, _ns, _ne, _fs,
-		_fe, _ba, _si, _sb,
-		_hb, _ht, _st, 0.0,
-		1.0, _np, _fp, _iso,
-		0.0, 0.0, 0.0, 0.0
+		_band, _ramp, _ba, _st,
+		_sb, _hb, _ht,
+		0.0, 1.0,
+		0.0, 0.0, 0.0
 	])
 
 	var x_groups: int = (size.x + 15) / 16
@@ -219,13 +173,10 @@ func _render_callback(
 
 	for view: int in render_scene_buffers.get_view_count():
 		var color_image: RID = render_scene_buffers.get_color_layer(view)
-		var depth_image: RID = render_scene_buffers.get_depth_layer(view)
 
-		if not color_image.is_valid() or not depth_image.is_valid():
+		if not color_image.is_valid():
 			continue
 		if not _intermediate.is_valid() or not _intermediate_b.is_valid():
-			continue
-		if not _nearest_sampler.is_valid():
 			continue
 
 		if _pipe_copy.is_valid():
@@ -260,19 +211,11 @@ func _render_callback(
 		u_dst_h.add_id(_intermediate_b)
 		var set_dst_h: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst_h])
 
-		var u_depth_h: RDUniform = RDUniform.new()
-		u_depth_h.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
-		u_depth_h.binding = 0
-		u_depth_h.add_id(_nearest_sampler)
-		u_depth_h.add_id(depth_image)
-		var set_depth_h: RID = UniformSetCacheRD.get_cache(shader, 2, [u_depth_h])
-
 		var cl_h: int = rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(cl_h, pipeline)
 		rd.compute_list_bind_uniform_set(cl_h, set_src_h, 0)
 		rd.compute_list_bind_uniform_set(cl_h, set_dst_h, 1)
-		rd.compute_list_bind_uniform_set(cl_h, set_depth_h, 2)
-		rd.compute_list_set_push_constant(cl_h, push_h.to_byte_array(), 80)
+		rd.compute_list_set_push_constant(cl_h, push_h.to_byte_array(), 48)
 		rd.compute_list_dispatch(cl_h, x_groups, y_groups, 1)
 		rd.compute_list_end()
 
@@ -288,19 +231,11 @@ func _render_callback(
 		u_dst_v.add_id(color_image)
 		var set_dst_v: RID = UniformSetCacheRD.get_cache(shader, 1, [u_dst_v])
 
-		var u_depth_v: RDUniform = RDUniform.new()
-		u_depth_v.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
-		u_depth_v.binding = 0
-		u_depth_v.add_id(_nearest_sampler)
-		u_depth_v.add_id(depth_image)
-		var set_depth_v: RID = UniformSetCacheRD.get_cache(shader, 2, [u_depth_v])
-
 		var cl_v: int = rd.compute_list_begin()
 		rd.compute_list_bind_compute_pipeline(cl_v, pipeline)
 		rd.compute_list_bind_uniform_set(cl_v, set_src_v, 0)
 		rd.compute_list_bind_uniform_set(cl_v, set_dst_v, 1)
-		rd.compute_list_bind_uniform_set(cl_v, set_depth_v, 2)
-		rd.compute_list_set_push_constant(cl_v, push_v.to_byte_array(), 80)
+		rd.compute_list_set_push_constant(cl_v, push_v.to_byte_array(), 48)
 		rd.compute_list_dispatch(cl_v, x_groups, y_groups, 1)
 		rd.compute_list_end()
 
@@ -331,6 +266,3 @@ func _cleanup() -> void:
 	if _intermediate_b.is_valid():
 		rd.free_rid(_intermediate_b)
 		_intermediate_b = RID()
-	if _nearest_sampler.is_valid():
-		rd.free_rid(_nearest_sampler)
-		_nearest_sampler = RID()

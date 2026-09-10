@@ -108,13 +108,24 @@ extends Camera3D
 @export_range(-100.0, 100.0) var ground_height: float = 0.0
 
 @export_category("Tilt-shift auto focus")
-## Push focus_distance / blur bands / near-far planes into the
-## PostProcessTiltShift effect every frame so the effect tracks the camera.
+## Push the screen-space blur band into the PostProcessTiltShift effect
+## every frame (the effect is pure screen-space; no depth involved).
 @export var auto_focus_tilt_shift: bool = true
-## In-focus half-width on the view axis = size * this.
-@export_range(0.1, 2.0) var focus_band_scale: float = 0.5
-## Blur falloff width on the view axis = size * this.
-@export_range(0.1, 4.0) var blur_ramp_scale: float = 1.2
+## Sharp/blur split line position, LINEAR over the whole slider: 0.0 = line
+## at dead center (bottom half blurs), 1.0 = line at the very bottom edge
+## (nothing blurred). Screen fraction from bottom = (1 - value) * 50%.
+## Raising the value moves the line DOWN; every step of the slider changes
+## the image - no dead zones.
+@export_range(0.0, 1.0) var focus_band_scale: float = 0.35
+## Blur gradient width below the line, fraction of screen half-height:
+## distance from the band edge to full blur. 0.02 = razor gradient, 1.0 =
+## soft gradient spanning the whole lower half of the screen.
+@export_range(0.02, 1.0) var blur_ramp_scale: float = 0.3
+## Live on-screen readout of the tilt-shift state (band/ramp/fade/effect).
+## Zero cost when off. Use it to verify tuning: the numbers MUST change
+## when you edit the values in the RUNNING game (Remote tab) - if the
+## numbers move but the image does not, the effect is not rendering.
+@export var tilt_shift_debug: bool = false
 
 var _center := Vector3.ZERO
 var _target_center := Vector3.ZERO
@@ -136,6 +147,7 @@ var _eye_dist := 60.0
 # Zoom anchoring: the world point to keep pinned while the size glides
 # toward _target_size.
 var _zoom_anchor := Vector3(INF, INF, INF)
+var _ts_debug_label: Label = null
 
 const _NO_HIT := Vector3(INF, INF, INF)
 const _UP := Vector3.UP
@@ -155,6 +167,15 @@ func _ready() -> void:
 	_yaw = 0.0
 	_find_tilt_shift()
 	_apply_transform()
+	if tilt_shift_debug:
+		var layer := CanvasLayer.new()
+		layer.name = "TiltShiftDebugLayer"
+		add_child(layer)
+		_ts_debug_label = Label.new()
+		_ts_debug_label.position = Vector2(12.0, 12.0)
+		layer.add_child(_ts_debug_label)
+		if _tilt_shift == null:
+			_ts_debug_label.text = "tilt-shift: NO EFFECT FOUND (compositor missing?)"
 
 
 func _exp_blend(rate: float, delta: float) -> float:
@@ -414,6 +435,12 @@ func _update_tilt_shift() -> void:
 	if not auto_focus_tilt_shift or _tilt_shift == null:
 		return
 
+	# Guard: writing properties on a freed CompositorEffect (freed with the
+	# scene tree) crashes in the render server — re-validate every frame.
+	if not is_instance_valid(_tilt_shift):
+		_tilt_shift = null
+		return
+
 	# Zoom fade: full strength up close, gradual falloff zooming out, and a
 	# hard disable (the effect then costs nothing) once fully faded. Zooming
 	# back in re-enables it and fades it in again. While auto-focus owns the
@@ -423,23 +450,22 @@ func _update_tilt_shift() -> void:
 		fade = 1.0 - smoothstep(tilt_shift_full_size, tilt_shift_off_size, size)
 	if fade <= 0.001:
 		_tilt_shift.enabled = false
+		_ts_debug_set("fade 0 - effect DISABLED (zoomed out)")
 		return
 	_tilt_shift.enabled = true
 	if _ts_base_strength >= 0.0:
 		_tilt_shift.strength = _ts_base_strength * fade
 
-	# Ground at the screen center is exactly `_eye_dist` deep on the view
-	# axis. In-focus band scales with the ortho size so the diorama stays
-	# sharp at every zoom level, and the blur ramps scale with it too.
-	# Cap band+ramp below _eye_dist so near_start never crosses 0 and the
-	# effect's export ranges are never clamped at extreme zoom-out.
-	var band := clampf(size * focus_band_scale, 1.0, _eye_dist * 0.45)
-	var ramp := minf(size * blur_ramp_scale, _eye_dist * 0.5)
-	_tilt_shift.focus_distance = _eye_dist
-	_tilt_shift.near_end = _eye_dist - band
-	_tilt_shift.near_start = _eye_dist - band - ramp
-	_tilt_shift.far_start = _eye_dist + band
-	_tilt_shift.far_end = _eye_dist + band + ramp
-	# Keep depth linearization exact: always report the real near/far.
-	_tilt_shift.near_plane = near
-	_tilt_shift.far_plane = far
+	# Sliders pass through 1:1 as fractions of the visible screen: what the
+	# inspector says is exactly what drives the blur. The shader wants
+	# fractions of FULL screen height, hence *0.5 (band 0 = line at dead
+	# center, 1 = line at the bottom edge).
+	_tilt_shift.band = focus_band_scale * 0.5
+	_tilt_shift.ramp = blur_ramp_scale * 0.5
+	_ts_debug_set("band=%.2f  ramp=%.2f\nfade=%.2f  strength=%.2f  size=%.1f" % [
+		focus_band_scale, blur_ramp_scale, fade, _tilt_shift.strength, size])
+
+
+func _ts_debug_set(text: String) -> void:
+	if _ts_debug_label != null:
+		_ts_debug_label.text = text
